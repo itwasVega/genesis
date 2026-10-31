@@ -35,7 +35,7 @@ Plugins are the places Genesis gathers what it needs to build your brief: assign
 
 | Plugin | What it adds |
 | --- | --- |
-| **Canvas** | Your classes, assignments, announcements, files and grades from any school's Canvas. Sign in like you always do, or use an access token if your school allows one. Your classes are found for you. Read-only. |
+| **Canvas** | Your classes, assignments, announcements, files and grades from any school's Canvas. Connects with a Canvas access token, and Genesis walks you through making one step by step. If your school turns tokens off, you log in on your school's own Canvas page instead. Your classes are found for you. Read-only. |
 | **Calendar** | Your private Canvas calendar feed, picked up for you, for due dates that only live on the calendar. |
 | **School email** | What professors only send by email, from Canvas and your school. Read-only. |
 

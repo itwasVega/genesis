@@ -25,7 +25,7 @@ struct GenesisPlugin: Identifiable {
     static let catalog: [GenesisPlugin] = [
         GenesisPlugin(id: "canvas", name: "Canvas", symbol: "graduationcap",
                       summary: "Your classes, assignments, files and grades.",
-                      detail: "Works with any school that uses Canvas. Sign in like you always do, or use an access token if your school allows one. Read-only: Genesis never submits or changes anything.", suggested: true),
+                      detail: "Works with any school that uses Canvas. Connects with a Canvas access token (Genesis shows you exactly how), or your school's login page if your school turns tokens off. Read-only: Genesis never submits or changes anything.", suggested: true),
         GenesisPlugin(id: "calendar", name: "Calendar", symbol: "calendar",
                       summary: "Every due date on your Canvas calendar.",
                       detail: "Genesis picks up your private Canvas calendar feed for you, so dates that only live on the calendar never slip by. The link stays in your Keychain.", suggested: true),
@@ -43,7 +43,7 @@ struct GenesisConfiguration: Codable {
     var welcomed: Bool = false              // you've met Genesis (the black-window welcome)
     var cop3330_professor_enabled: Bool?
     var canvas_host: String = ""            // your school's Canvas address, e.g. canvas.myschool.edu
-    var canvas_auth: String = "signin"      // "signin" (your normal login) or "token" (an access token)
+    var canvas_auth: String = "signin"      // "token" (an access token, the main way) or "signin" (the school login page, when tokens are off)
     var school_email: String?
     var timezone: String?
     var public_resource_hosts: [String]?

@@ -52,7 +52,7 @@ struct SettingsView: View {
             if model.plugins.contains("canvas") {
             Section("Canvas") {
                 LabeledContent("School", value: connections.canvas_host.isEmpty ? "not set" : connections.canvas_host)
-                LabeledContent("Connected with", value: connections.canvas_auth == "token" ? "an access token" : "your normal sign-in")
+                LabeledContent("Connected with", value: connections.canvas_auth == "token" ? "an access token" : "your school login page")
                 ForEach(connections.courses) { course in
                     LabeledContent(course.label, value: course.id)
                 }

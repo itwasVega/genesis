@@ -1,10 +1,16 @@
 # Changelog
 
+## 1.0 (51) — October 31, 2026
+
+### Changed
+- **Canvas connects with an access token first.** Setup walks you through making one in four drawn steps, white line sketches on black that show exactly where to click: Account › Settings, Approved Integrations › + New Access Token, name it Genesis › Generate Token, then copy and paste. If you copied the token, it's already waiting in the box when you come back.
+- **If your school turns tokens off,** Genesis takes you to your school's own Canvas login page instead.
+
 ## 1.0 (50) — October 31, 2026
 
 ### Added
 - **Meet Genesis.** The first launch opens to pure black; a small light grows into the orb, and she introduces herself. Then she walks you through setup in plain words: your name, ChatGPT (found on your Mac for you), your school's Canvas, your classes (found for you), your Canvas calendar (picked up for you), school email, the iPhone app and notifications. Replay it any time in Settings.
-- **Any school.** Canvas works for every school: sign in like usual, or use an access token if your school allows one. Your time zone, your classes' names and the words you use for them come from you.
+- **Any school.** Canvas works for every school: by access token, or your school's login page if tokens are off. Your time zone, your classes' names and the words you use for them come from you.
 - **Add opens setup right away.** Adding a plugin goes straight into its sign-in or instant setup.
 - **A real installer window.** Genesis.dmg opens to a black, drag-to-Applications window.
 

@@ -9,7 +9,7 @@ import UserNotifications
 // becomes the orb: that's Genesis, and she introduces herself. Then she walks you through
 // everything she needs, one thing at a time, in plain words, with nothing to figure out:
 //   your name → her brain (your ChatGPT account, found for you) → your school's Canvas
-//   (sign in like usual, or an access token) → your classes (found for you) → your Canvas
+//   (a Canvas access token, drawn step by step; your school's login page if tokens are off) → your classes (found for you) → your Canvas
 //   calendar (picked up for you) → school email (optional) → the iPhone app → a tap on the
 //   shoulder (notifications) → your first plan.
 // The same steps open on their own when you add a plugin later, so nothing ever needs a trip
@@ -95,6 +95,8 @@ final class SetupFlow: ObservableObject {
     /// How you chose to connect on this pass: nil until you pick.
     @Published var method: String?
     @Published var tokenTyped = ""
+    /// Where you are in the access-token guide: 0 is the hello, 1–4 are the drawn steps.
+    @Published var guide = 0
     enum CanvasState: Equatable { case idle, waiting, checking, problem(String) }
     @Published var canvasState: CanvasState = .idle
     @Published var courses: [LocalCanvas.FoundCourse] = []
@@ -112,8 +114,8 @@ final class SetupFlow: ObservableObject {
         return true
     }
 
-    /// Sign in like usual: the school's real page, inside Genesis. Genesis watches for the
-    /// moment you're in, then moves on by itself.
+    /// The fallback, for schools that turn access tokens off: the school's own Canvas login,
+    /// inside Genesis. Genesis watches for the moment you're in, then moves on by itself.
     func startSignIn() {
         guard let canvas else { return }
         method = "signin"; auth = "signin"
@@ -129,10 +131,18 @@ final class SetupFlow: ObservableObject {
         }
     }
 
+    /// Back to the main path: an access token, with the drawn guide.
+    func useTokenPath() {
+        watcher?.invalidate()
+        method = "token"; canvasState = .idle
+        withAnimation(.easeOut(duration: 0.3)) { guide = 0 }
+    }
+
     func useToken() async {
         let t = tokenTyped.trimmingCharacters(in: .whitespacesAndNewlines)
         guard t.count > 20 else { canvasState = .problem("that token looks too short. copy the whole thing, it's a long one."); return }
         auth = "token"
+        method = "token"
         guard CanvasToken.save(t, host: host) else { canvasState = .problem("your Mac's Keychain didn't let me save it. try once more?"); return }
         canvasState = .checking
         if await canvas?.whoAmI() == nil {
@@ -338,7 +348,7 @@ struct WelcomeView: View {
                         .scaleEffect(orb ? 1 : 0.04)
                         .opacity(orb ? 1 : 0)
                 }
-                .frame(height: 200)
+                .frame(height: flow.step == .connect ? 96 : 200)
                 .animation(.spring(response: 0.7, dampingFraction: 0.8), value: orbSize)
 
                 Group {
@@ -468,33 +478,18 @@ struct WelcomeView: View {
     private var connectStep: some View {
         VStack(spacing: 14) {
             if flow.canvasState == .waiting {
-                Said2(text: "sign in like you always do. it's your school's real page, and your login stays private on this Mac. I'll take it from there.", small: true)
+                Said2(text: "this is your school's own Canvas login. log in here and I'll take it from there. it stays private on this Mac.", small: true)
                 CanvasWebView(canvas: model.canvas)
                     .frame(width: 640, height: 400)
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(.white.opacity(0.12), lineWidth: 1))
                     .onAppear { model.canvasEmbedded = true }
                     .onDisappear { model.canvasEmbedded = false }
-                Button("use an access token instead") { flow.method = "token"; flow.canvasState = .idle }.buttonStyle(.plain).font(Typeface.sans(12)).foregroundStyle(.white.opacity(0.4))
+                Button("got an access token after all? use it instead") { flow.useTokenPath() }.buttonStyle(.plain).font(Typeface.sans(12)).foregroundStyle(.white.opacity(0.4))
             } else if flow.canvasState == .checking {
                 Said2(big: "you're in. finding your classes…")
-            } else if flow.method == "token" {
-                Said2(big: "paste your access token.")
-                Said2(text: "on Canvas, open Account › Settings, scroll to Approved Integrations, and click New Access Token. name it Genesis, then copy the long code it shows you.", small: true)
-                Buttons { Button("open my Canvas settings") { NSWorkspace.shared.open(URL(string: "https://\(flow.host)/profile/settings")!) }.welcomeSecondary() }
-                GlassField(placeholder: "paste the token here", text: $flow.tokenTyped, secure: true) { Task { await flow.useToken() } }
-                    .frame(maxWidth: 380)
-                problem
-                Buttons { Button("connect") { Task { await flow.useToken() } }.welcomePrimary().disabled(flow.tokenTyped.isEmpty) }
-                Button("sign in like usual instead") { flow.startSignIn() }.buttonStyle(.plain).font(Typeface.sans(12)).foregroundStyle(.white.opacity(0.4))
             } else {
-                Said2(big: "how do you want to connect?")
-                problem
-                VStack(spacing: 10) {
-                    ChoiceCard(title: "sign in like usual", detail: "works at every school. you'll see your school's own login page.", recommended: true) { flow.startSignIn() }
-                    ChoiceCard(title: "use an access token", detail: "if your school lets students make one in Canvas settings.") { flow.method = "token"; flow.canvasState = .idle }
-                }
-                .frame(maxWidth: 440)
+                TokenGuide(flow: flow)
             }
         }
     }
@@ -769,5 +764,262 @@ struct WelcomeButtonStyle: ButtonStyle {
             .shadow(color: .white.opacity(primary ? 0.18 : 0), radius: 14)
             .opacity(enabled ? 1 : 0.4)
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
+    }
+}
+
+// MARK: - The access token, drawn
+
+/// How Genesis connects to Canvas: an access token, a read-only key the student makes in their
+/// own Canvas settings. The guide holds their hand through it with four white line sketches on
+/// black, each drawing itself in with a pulse on exactly what to click. Schools that turn tokens
+/// off get the school's own login page instead.
+private struct TokenGuide: View {
+    @ObservedObject var flow: SetupFlow
+    private static let words: [(big: String, text: String)] = [
+        ("", ""),
+        ("open your Canvas settings.", "the button below takes you right there. log in first if Canvas asks. (it's the same as clicking Account on the far left, then Settings.)"),
+        ("find Approved Integrations.", "scroll down your settings page until you see it, then click + New Access Token."),
+        ("call it Genesis.", "type Genesis where it says Purpose. you can leave the date empty. then click Generate Token."),
+        ("copy it, paste it here.", "Canvas only shows it once, so copy the whole long code now. paste it below and I'll do the rest."),
+    ]
+
+    var body: some View {
+        VStack(spacing: 12) {
+            if flow.guide == 0 { hello } else { step(flow.guide) }
+        }
+        .animation(.easeOut(duration: 0.3), value: flow.guide)
+    }
+
+    private var hello: some View {
+        VStack(spacing: 14) {
+            Said2(big: "let's connect your Canvas.")
+            Said2(text: "I use a Canvas access token. think of it as a key that only reads: your classes, due dates and grades, never anything you'd turn in. it stays in your Mac's Keychain, and making one takes about a minute. I'll show you exactly where.", small: true)
+            Buttons {
+                Button("I already have one") { go(4) }.welcomeSecondary()
+                Button("show me how") { go(1) }.welcomePrimary()
+            }
+            fallback("my school doesn't let me make one")
+        }
+    }
+
+    @ViewBuilder private func step(_ n: Int) -> some View {
+        SketchCard(step: n).id(n).frame(maxWidth: 460)
+        Said2(big: Self.words[n].big).id("big\(n)")
+        Said2(text: Self.words[n].text, small: true).id("text\(n)")
+        switch n {
+        case 1:
+            Buttons(delay: 0.1) {
+                Button("back") { go(0) }.welcomeSecondary()
+                Button("open my Canvas settings") {
+                    if let url = URL(string: "https://\(flow.host)/profile/settings") { NSWorkspace.shared.open(url) }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) { go(2) }
+                }.welcomePrimary()
+            }
+        case 2:
+            Buttons(delay: 0.1) {
+                Button("back") { go(1) }.welcomeSecondary()
+                Button("I clicked it") { go(3) }.welcomePrimary()
+            }
+            fallback("I don't see New Access Token")
+        case 3:
+            Buttons(delay: 0.1) {
+                Button("back") { go(2) }.welcomeSecondary()
+                Button("I see a long code") { go(4) }.welcomePrimary()
+            }
+        default:
+            GlassField(placeholder: "paste the token here", text: $flow.tokenTyped, secure: true) { Task { await flow.useToken() } }
+                .frame(maxWidth: 380)
+                .onAppear(perform: catchCopied)
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in catchCopied() }
+            if let p = flow.problemText {
+                Text(p).font(Typeface.sans(12.5)).foregroundStyle(.white.opacity(0.85)).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+            }
+            Buttons(delay: 0.1) {
+                Button("back") { go(3) }.welcomeSecondary()
+                Button("connect") { Task { await flow.useToken() } }.welcomePrimary().disabled(flow.tokenTyped.isEmpty)
+            }
+            fallback("it won't take my token")
+        }
+    }
+
+    /// No token at this school: the alternative is the school's own login page.
+    private func fallback(_ title: String) -> some View {
+        VStack(spacing: 4) {
+            Button { flow.startSignIn() } label: {
+                Text(title + "  ›").font(Typeface.sans(12.5, .medium)).foregroundStyle(.white.opacity(0.55))
+            }
+            .buttonStyle(.plain)
+            Text("no problem. some schools turn tokens off. I'll take you to your school's login page instead.")
+                .font(Typeface.sans(11)).foregroundStyle(.white.opacity(0.32)).multilineTextAlignment(.center)
+        }
+        .padding(.top, 6)
+    }
+
+    private func go(_ n: Int) { flow.canvasState = .idle; flow.guide = n }
+
+    /// Coming back from Canvas with the token already copied: it's waiting in the box.
+    private func catchCopied() {
+        guard flow.tokenTyped.isEmpty, let s = NSPasteboard.general.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              s.range(of: "^[0-9]+~[A-Za-z0-9]{30,}$", options: .regularExpression) != nil else { return }
+        flow.tokenTyped = s
+    }
+}
+
+/// One drawn step: thin white lines on black, a faint grid, a slow scan line, corner brackets,
+/// and a pulse around the thing to click.
+private struct SketchCard: View {
+    var step: Int
+    @State private var drawn: CGFloat = 0
+    @State private var pulse = false
+    @State private var scan = false
+    @Environment(\.accessibilityReduceMotion) private var reduce
+
+    var body: some View {
+        let d = Drawing.of(step)
+        GeometryReader { g in
+            let w = g.size.width, h = g.size.height
+            ZStack(alignment: .topLeading) {
+                Canvas { ctx, size in
+                    var y: CGFloat = 8
+                    while y < size.height { var x: CGFloat = 8
+                        while x < size.width { ctx.fill(Path(ellipseIn: CGRect(x: x, y: y, width: 1, height: 1)), with: .color(.white.opacity(0.09))); x += 16 }
+                        y += 16 }
+                }
+                Sketch(marks: d.faint).trim(from: 0, to: drawn)
+                    .stroke(.white.opacity(0.3), style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
+                Sketch(marks: d.bright).trim(from: 0, to: drawn)
+                    .stroke(.white.opacity(0.92), style: StrokeStyle(lineWidth: 1.3, lineCap: .round, lineJoin: .round))
+                ForEach(d.labels) { l in
+                    Text(l.text).font(Typeface.mono(9.5, l.bright ? .medium : .regular))
+                        .foregroundStyle(.white.opacity(l.bright ? 0.95 : 0.45))
+                        .fixedSize()
+                        .position(x: l.x * w, y: l.y * h)
+                }
+                .opacity(drawn)
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .stroke(.white, lineWidth: 1.2)
+                    .frame(width: d.target.width * w + 10, height: d.target.height * h + 10)
+                    .scaleEffect(pulse ? 1.18 : 1)
+                    .opacity(drawn < 1 ? 0 : (pulse ? 0 : 0.9))
+                    .position(x: d.target.midX * w, y: d.target.midY * h)
+                Rectangle().fill(LinearGradient(colors: [.clear, .white.opacity(0.10), .clear], startPoint: .leading, endPoint: .trailing))
+                    .frame(width: w, height: 1)
+                    .offset(y: scan ? h : 0)
+                    .opacity(reduce ? 0 : 1)
+            }
+        }
+        .frame(height: 150)
+        .padding(14)
+        .background(Color.black)
+        .overlay(CornerBrackets().stroke(.white.opacity(0.55), lineWidth: 1))
+        .overlay(alignment: .topTrailing) {
+            Text(String(format: "%02d / 04", step)).font(Typeface.mono(10)).foregroundStyle(.white.opacity(0.4)).padding(.horizontal, 10).padding(.vertical, 6)
+        }
+        .onAppear {
+            if reduce { drawn = 1; return }
+            withAnimation(.easeInOut(duration: 1.5)) { drawn = 1 }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation(.easeOut(duration: 1.5).repeatForever(autoreverses: false)) { pulse = true }
+            }
+            withAnimation(.linear(duration: 5).repeatForever(autoreverses: false)) { scan = true }
+        }
+    }
+}
+
+private struct CornerBrackets: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path(); let l: CGFloat = 14
+        for (c, dx, dy) in [(CGPoint(x: r.minX, y: r.minY), 1.0, 1.0), (CGPoint(x: r.maxX, y: r.minY), -1.0, 1.0),
+                            (CGPoint(x: r.minX, y: r.maxY), 1.0, -1.0), (CGPoint(x: r.maxX, y: r.maxY), -1.0, -1.0)] {
+            p.move(to: CGPoint(x: c.x + dx * l, y: c.y)); p.addLine(to: c); p.addLine(to: CGPoint(x: c.x, y: c.y + dy * l))
+        }
+        return p
+    }
+}
+
+private enum Mark {
+    case box(CGFloat, CGFloat, CGFloat, CGFloat, CGFloat = 4)
+    case line(CGFloat, CGFloat, CGFloat, CGFloat)
+    case ring(CGFloat, CGFloat, CGFloat)          // center, radius as a share of the height
+    case arrow(CGFloat, CGFloat, CGFloat, CGFloat)
+}
+
+private struct SketchLabel: Identifiable {
+    var text: String; var x: CGFloat; var y: CGFloat; var bright = false
+    var id: String { text + "\(x)\(y)" }
+}
+
+private struct Sketch: Shape {
+    var marks: [Mark]
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: r.minX + x * r.width, y: r.minY + y * r.height) }
+        for m in marks {
+            switch m {
+            case let .box(x, y, w, h, c):
+                p.addRoundedRect(in: CGRect(origin: pt(x, y), size: CGSize(width: w * r.width, height: h * r.height)), cornerSize: CGSize(width: c, height: c))
+            case let .line(a, b, c, d):
+                p.move(to: pt(a, b)); p.addLine(to: pt(c, d))
+            case let .ring(x, y, rad):
+                let c = pt(x, y), k = rad * r.height
+                p.addEllipse(in: CGRect(x: c.x - k, y: c.y - k, width: k * 2, height: k * 2))
+            case let .arrow(a, b, c, d):
+                let s = pt(a, b), e = pt(c, d), ang = atan2(e.y - s.y, e.x - s.x)
+                p.move(to: s); p.addLine(to: e)
+                for t in [ang + .pi * 0.8, ang - .pi * 0.8] { p.move(to: e); p.addLine(to: CGPoint(x: e.x + 7 * cos(t), y: e.y + 7 * sin(t))) }
+            }
+        }
+        return p
+    }
+}
+
+/// The four pictures. Coordinates are shares of the card, so they hold at any size.
+private struct Drawing {
+    var bright: [Mark]; var faint: [Mark]; var labels: [SketchLabel]; var target: CGRect
+
+    private static let window: [Mark] = [.box(0.01, 0.02, 0.98, 0.96, 8), .line(0.01, 0.16, 0.99, 0.16),
+                                         .ring(0.04, 0.09, 0.022), .ring(0.065, 0.09, 0.022), .ring(0.09, 0.09, 0.022)]
+
+    static func of(_ step: Int) -> Drawing {
+        switch step {
+        case 1:   // Canvas: Account on the far left, then Settings
+            return Drawing(
+                bright: window + [.line(0.13, 0.16, 0.13, 0.98), .ring(0.07, 0.27, 0.05),
+                                  .box(0.15, 0.21, 0.29, 0.7, 6), .ring(0.21, 0.34, 0.06), .box(0.17, 0.63, 0.25, 0.1, 4)],
+                faint: [.ring(0.07, 0.48, 0.04), .ring(0.07, 0.63, 0.04), .ring(0.07, 0.78, 0.04),
+                        .line(0.27, 0.31, 0.41, 0.31), .line(0.27, 0.37, 0.37, 0.37), .line(0.17, 0.5, 0.41, 0.5), .line(0.17, 0.82, 0.36, 0.82),
+                        .line(0.5, 0.3, 0.93, 0.3), .line(0.5, 0.42, 0.86, 0.42), .line(0.5, 0.54, 0.9, 0.54), .line(0.5, 0.66, 0.8, 0.66), .line(0.5, 0.78, 0.88, 0.78)],
+                labels: [SketchLabel(text: "Canvas", x: 0.5, y: 0.09), SketchLabel(text: "Account", x: 0.07, y: 0.37),
+                         SketchLabel(text: "Settings", x: 0.24, y: 0.68, bright: true)],
+                target: CGRect(x: 0.17, y: 0.63, width: 0.25, height: 0.1))
+        case 2:   // Settings: scroll to Approved Integrations, + New Access Token
+            return Drawing(
+                bright: window + [.line(0.05, 0.52, 0.6, 0.52), .box(0.66, 0.4, 0.29, 0.13, 4), .box(0.966, 0.46, 0.014, 0.2, 3),
+                                  .arrow(0.92, 0.22, 0.92, 0.33)],
+                faint: [.line(0.05, 0.25, 0.5, 0.25), .line(0.05, 0.31, 0.4, 0.31),
+                        .line(0.05, 0.64, 0.94, 0.64), .line(0.05, 0.74, 0.94, 0.74), .line(0.05, 0.84, 0.94, 0.84), .line(0.4, 0.58, 0.4, 0.9),
+                        .line(0.973, 0.2, 0.973, 0.94)],
+                labels: [SketchLabel(text: "Settings", x: 0.5, y: 0.09), SketchLabel(text: "scroll", x: 0.86, y: 0.27),
+                         SketchLabel(text: "Approved Integrations", x: 0.2, y: 0.46, bright: true),
+                         SketchLabel(text: "+ New Access Token", x: 0.805, y: 0.465, bright: true)],
+                target: CGRect(x: 0.66, y: 0.4, width: 0.29, height: 0.13))
+        case 3:   // The little window: Purpose "Genesis", date empty, Generate Token
+            return Drawing(
+                bright: [.box(0.2, 0.08, 0.6, 0.86, 8), .box(0.37, 0.33, 0.37, 0.13, 4), .box(0.37, 0.52, 0.37, 0.13, 4), .box(0.5, 0.74, 0.24, 0.12, 4)],
+                faint: window + [.line(0.2, 0.25, 0.8, 0.25), .line(0.03, 0.4, 0.17, 0.4), .line(0.03, 0.55, 0.15, 0.55), .line(0.83, 0.45, 0.97, 0.45)],
+                labels: [SketchLabel(text: "New Access Token", x: 0.5, y: 0.17, bright: true),
+                         SketchLabel(text: "Purpose", x: 0.29, y: 0.395), SketchLabel(text: "Genesis", x: 0.44, y: 0.395, bright: true),
+                         SketchLabel(text: "Expires", x: 0.29, y: 0.585), SketchLabel(text: "(leave empty)", x: 0.6, y: 0.585),
+                         SketchLabel(text: "Generate Token", x: 0.62, y: 0.8, bright: true)],
+                target: CGRect(x: 0.5, y: 0.74, width: 0.24, height: 0.12))
+        default:  // The token: copy the long code, paste it into Genesis
+            return Drawing(
+                bright: [.box(0.1, 0.06, 0.8, 0.5, 8), .box(0.14, 0.27, 0.72, 0.16, 4), .arrow(0.5, 0.59, 0.5, 0.74), .box(0.3, 0.78, 0.4, 0.16, 15)],
+                faint: [.line(0.1, 0.2, 0.9, 0.2)],
+                labels: [SketchLabel(text: "Token", x: 0.17, y: 0.13), SketchLabel(text: "copy  ⌘C", x: 0.82, y: 0.13),
+                         SketchLabel(text: "7~Ah3kQ9xR2mZp8L0vWc5nTj4bYe6Fs1GuNq", x: 0.5, y: 0.35, bright: true),
+                         SketchLabel(text: "paste here  ⌘V", x: 0.5, y: 0.86, bright: true)],
+                target: CGRect(x: 0.14, y: 0.27, width: 0.72, height: 0.16))
+        }
     }
 }
