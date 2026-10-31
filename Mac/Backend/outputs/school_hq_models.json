@@ -1,6 +1,7 @@
 {
   "schema": 1,
-  "note": "Models are discovered from the connected account in Settings. Existing user choices are preserved.",
+  "mode": "auto",
+  "note": "mode \"auto\": Genesis picks the model and reasoning effort for every job from what your account offers. mode \"manual\": each job uses the model and effort set below (Settings \u203a Models \u203a Manual).",
   "jobs": {
     "catalog": {
       "model": "auto",
@@ -24,7 +25,7 @@
     },
     "verify": {
       "model": "auto",
-      "effort": "medium",
+      "effort": "high",
       "why": "Uses the selected account model for this study step."
     },
     "grade": {
@@ -36,6 +37,11 @@
       "model": "auto",
       "effort": "low",
       "why": "Uses the selected account model for this study step."
+    },
+    "scout": {
+      "model": "auto",
+      "effort": "medium",
+      "why": "Searches the web for public past exams, practice exams, syllabi and the professor's course pages."
     }
   },
   "parallel_jobs": 3,

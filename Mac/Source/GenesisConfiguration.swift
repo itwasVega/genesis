@@ -7,6 +7,8 @@ struct GenesisCourse: Codable, Identifiable {
     var canvas_id: String
     var aliases: [String]?        // extra words notes use for this class ("calc", a professor's name)
     var language: String?         // a CS class's programming language, when it has one
+    var instructors: [String]? = nil  // from Canvas; the scout looks for this professor's past exams
+    var term: String? = nil           // e.g. "Fall 2026"
 }
 
 /// A plugin is a place Genesis gathers what it needs for your brief: assignments, documents,

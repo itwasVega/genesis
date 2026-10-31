@@ -226,7 +226,7 @@ def main():
   try:
    if failures:raise RuntimeError(' | '.join(failures))
    active(ident)
-   progress(ident,'supplements',0.36,'Reading email, professor materials and calendar…')
+   progress(ident,'supplements',0.36,'Reading email and calendar, and looking for past exams…')
    def professor():
     # An optional, workspace-local reader for one professor's public site. It ships with no
     # school's code; it runs only if that workspace has its own module and switch.
@@ -272,7 +272,23 @@ def main():
     except Exception as exc:
      store.event(mdb,ident,'optional-mail:failed','Email supplement could not finish ('+type(exc).__name__+'); Canvas readiness is independent.')
     finally:mdb.close()
-   threads=[threading.Thread(target=f,daemon=True) for f in (professor,calendar,mail)]
+   def scout():
+    # Past exams, practice exams, syllabi and the professor's pages, found on the school's own
+    # site. Always on: it only runs for a class when something new could be found.
+    sdb=store.connect()
+    try:
+     import school_hq_scout
+     with timed(sdb,ident,'scout'):result=school_hq_scout.run(ident,guard=lambda:active(ident))
+     for record in result.get('records',[]):
+      for m in record['materials']:
+       if m.get('text_path'):
+        try:store.index(sdb,m['text_path'],record['course'],'found-online')
+        except (UnicodeError,ValueError):pass
+     store.event(sdb,ident,'scout:'+result['status'],json.dumps(result['classes'])[:400])
+    except Exception as exc:
+     store.event(sdb,ident,'scout:failed','Looking for past exams could not finish ('+type(exc).__name__+'); nothing else depends on it.')
+    finally:sdb.close()
+   threads=[threading.Thread(target=f,daemon=True) for f in (professor,calendar,mail,scout)]
    for t in threads:t.start()
    for t in threads:t.join()
    active(ident)

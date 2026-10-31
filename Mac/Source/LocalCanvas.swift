@@ -144,6 +144,7 @@ import PDFKit
     guard let raw=value as? String,let data=raw.data(using:.utf8),let result=try JSONSerialization.jsonObject(with:data) as? [String:Any],result["pagination_complete"] as? Bool==true else{throw issue("Structured Canvas collection incomplete")}
     try ensureActive(root,ident)
     captures += result["captures"] as? [[String:Any]] ?? [];diagnostics=result
+    await refreshCourseFacts(root:root)
     var failures=result["failures"] as? [[String:Any]] ?? []
     for resource in result["resources"] as? [[String:Any]] ?? [] {
      try ensureActive(root,ident)
@@ -177,15 +178,15 @@ import PDFKit
   let name=value as? String ?? "";return name.isEmpty ? nil:name
  }
 
- struct FoundCourse: Identifiable, Hashable { var id:String; var code:String; var name:String; var term:String; var picked:Bool }
+ struct FoundCourse: Identifiable, Hashable { var id:String; var code:String; var name:String; var term:String; var picked:Bool; var teachers:[String]=[] }
  /// Setup: the classes you're enrolled in right now, straight from Canvas.
  func findCourses() async throws -> [FoundCourse] {
   let script="""
   const h=token?{Accept:'application/json',Authorization:'Bearer '+token}:{Accept:'application/json'};
-  const r=await fetch('/api/v1/courses?enrollment_state=active&per_page=100&include%5B%5D=term',{credentials:'same-origin',headers:h});
+  const r=await fetch('/api/v1/courses?enrollment_state=active&per_page=100&include%5B%5D=term&include%5B%5D=teachers',{credentials:'same-origin',headers:h});
   if(!r.ok)throw Error('Canvas said '+r.status);
   const list=JSON.parse((await r.text()).replace(/^while\\s*\\(1\\);\\s*/,''));
-  return JSON.stringify(list.filter(c=>c&&c.name&&!c.access_restricted_by_date).map(c=>({id:String(c.id),code:c.course_code||'',name:c.name,term:(c.term&&c.term.name)||''})));
+  return JSON.stringify(list.filter(c=>c&&c.name&&!c.access_restricted_by_date).map(c=>({id:String(c.id),code:c.course_code||'',name:c.name,term:(c.term&&c.term.name)||'',teachers:(c.teachers||[]).map(t=>t.display_name||'').filter(Boolean).slice(0,3).join('\n')})));
   """
   guard let raw=try await web.callAsyncJavaScript(script,arguments:["token":token ?? ""],in:nil,contentWorld:.page) as? String,let data=raw.data(using:.utf8),let rows=try JSONSerialization.jsonObject(with:data) as? [[String:String]] else{throw issue("Canvas didn't send your classes.")}
   // The current term's classes come first and are picked; clubs, advising and old terms are not.
@@ -194,8 +195,21 @@ import PDFKit
   return rows.map{r in
    let code=r["code"] ?? "",name=r["name"] ?? ""
    let looksLikeClass=code.range(of:"[A-Za-z]{2,4}[ -]?[0-9]{3,4}",options:.regularExpression) != nil
-   return FoundCourse(id:r["id"] ?? "",code:code,name:name,term:r["term"] ?? "",picked:looksLikeClass && (main==nil || r["term"]==main))
+   return FoundCourse(id:r["id"] ?? "",code:code,name:name,term:r["term"] ?? "",picked:looksLikeClass && (main==nil || r["term"]==main),teachers:(r["teachers"] ?? "").split(separator:"\n").map(String.init))
   }.sorted{($0.picked ? 0:1,$0.name)<($1.picked ? 0:1,$1.name)}
+ }
+
+ /// Each sync: who teaches each class and which term it is, so the scout can look for that
+ /// professor's past exams. Best effort; a failure changes nothing.
+ func refreshCourseFacts(root:String) async {
+  guard let found=try? await findCourses(),var config=try? GenesisConfiguration.load(root:root) else{return}
+  var changed=false
+  for i in config.courses.indices {
+   guard let f=found.first(where:{$0.id==config.courses[i].canvas_id}) else{continue}
+   if !f.teachers.isEmpty,config.courses[i].instructors != f.teachers{config.courses[i].instructors=f.teachers;changed=true}
+   if !f.term.isEmpty,config.courses[i].term != f.term{config.courses[i].term=f.term;changed=true}
+  }
+  if changed{try? config.save(root:root)}
  }
 
  /// Setup: the private calendar feed Canvas makes for every student (so due dates never slip).

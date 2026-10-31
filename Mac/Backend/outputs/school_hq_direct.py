@@ -5,10 +5,12 @@ from school_hq_ai_setup import executable
 ROOT=Path(__file__).resolve().parent.parent
 class ClientIdleTimeout(RuntimeError): pass
 class Client:
- def __init__(self):
+ def __init__(self,web=False):
   cli=executable()
   runtime=ROOT/'work/school-hq-app/runtime-state';runtime.mkdir(parents=True,exist_ok=True)
-  self.p=subprocess.Popen([str(cli),'-c','sqlite_home='+json.dumps(str(runtime)),'-c','log_dir='+json.dumps(str(runtime/'log')),'app-server','--listen','stdio://'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
+  # Web search is off for every job except the scout, which looks for public course material.
+  search=['-c','web_search="live"'] if web else []
+  self.p=subprocess.Popen([str(cli),'-c','sqlite_home='+json.dumps(str(runtime)),'-c','log_dir='+json.dumps(str(runtime/'log')),*search,'app-server','--listen','stdio://'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
   self.diagnostic=''
   threading.Thread(target=self.read_errors,daemon=True).start()
   self.q=queue.Queue();self.pending=[];self.ident=0;self.thread=None

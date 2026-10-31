@@ -96,7 +96,8 @@ def documents(root=ROOT):
   role='graded' if GRADED.search(Path(p).name) or GRADED.search(title) else 'solution' if SOLUTION.search(title) else 'questions' if (QUESTION.search(title) or a.get('category') in ('sample_questions','exam_questions','weekly_practice','review_notes')) else 'teaching'
   if a.get('category') in ('sample_solutions','exam_solutions'):role='solution'
   if a.get('category') in ('lecture_notes','in_class_notes'):role='teaching'
-  docs.append({'path':p,'title':title,'course':a['course'],'sha256':a.get('sha256'),'role':role,'source_url':a.get('source_url'),'category':a.get('category'),'captured_at':a.get('captured_at')})
+  docs.append({'path':p,'title':title,'course':a['course'],'sha256':a.get('sha256'),'role':role,'source_url':a.get('source_url'),'category':a.get('category'),'captured_at':a.get('captured_at'),
+               'found_online':bool(a.get('found_online')),'term':a.get('term'),'instructor':a.get('instructor'),'same_instructor':bool(a.get('same_instructor')),'past_exam':a.get('category') in ('exam_questions','sample_questions') and bool(a.get('found_online'))})
  # Pair question sheets with answer keys in the same course by title stem.
  for d in docs:
   if d['role']!='questions':continue
@@ -184,14 +185,15 @@ def build(root=ROOT,guard=None,progress=None,limit=40,client_factory=None):
  # Exam-style material first, then sets with answer keys, then everything else.
  def rank(item):
   d=item[0];t=d['title']
-  return (0 if re.search(r'exam|midterm|sample|ex\d+pr|quiz|revision|review',t,re.I) else 1,0 if d.get('solution_path') else 1,t)
+  return (0 if d.get('past_exam') else 1,0 if re.search(r'exam|midterm|sample|ex\d+pr|quiz|revision|review',t,re.I) else 1,0 if d.get('solution_path') else 1,t)
  todo=sorted(todo,key=rank)[:limit]
  def work(item):
   d,digest=item;pages=texts[d['path']];sol=texts.get(d.get('solution_path') or '',[])
   value=ai.run_json('catalog',extraction_prompt(d,pages,sol),lambda v:validate_problems(v,pages,sol),name='catalog-'+digest[:10],timeout=600,guard=guard,client_factory=client_factory)
   for p in value['problems']:p['id']=problem_id(digest,p)
   record={'schema':1,'sha256':digest,'path':d['path'],'title':d['title'],'course':d['course'],'page_count':len(pages),'source_url':d.get('source_url'),
-          'solution_path':d.get('solution_path'),'solution_sha256':sha(d['solution_path']) if d.get('solution_path') else None,'built_at':now(),'model':ai.route('catalog')[0],**value}
+          'solution_path':d.get('solution_path'),'solution_sha256':sha(d['solution_path']) if d.get('solution_path') else None,'built_at':now(),'model':ai.route('catalog')[0],
+          'found_online':d.get('found_online',False),'past_exam':d.get('past_exam',False),'term':d.get('term'),'instructor':d.get('instructor'),'same_instructor':d.get('same_instructor',False),**value}
   atomic(CATALOG/(digest+'.json'),record);return len(value['problems'])
  results=ai.parallel(todo,work,on_done=(lambda n,t:progress(n,t)) if progress else None) if todo else []
  failed=[(i[0]['title'],str(r)[:200]) for i,r in results if isinstance(r,Exception)]

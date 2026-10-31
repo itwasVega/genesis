@@ -136,11 +136,22 @@ def match_problems(skill_text,course,catalog,usage,day,exam_soon,limit=3):
    if score<3:continue
    if p.get('has_official_solution'):score+=2
    if exam_soon and exam_doc:score+=3
+   if doc.get('past_exam'):score+=2+(2 if doc.get('same_instructor') else 0)   # how this class has actually been tested
    if usage.get(p['id'],{}).get('last_outcome')=='incorrect':score+=2
    if last==day.isoformat():score+=50
    rows.append((score,doc,p))
  rows.sort(key=lambda r:-r[0])
  return rows[:limit]
+
+def past_exam_hits(course,query,catalog):
+ """Past exams (found online) that tested this topic, e.g. 'Fall 2024 Exam 2 (your professor)'."""
+ want=words(query);hits=[]
+ for doc in catalog:
+  if doc['course']!=course or not doc.get('past_exam'):continue
+  if any(len(want&words(' '.join(p.get('skills',[]))+' '+p.get('structure','')))>=1 for p in doc['problems']):
+   label=' '.join(x for x in (doc.get('term'),re.sub(r'(?i)\.pdf$','',doc['title'])[:50]) if x)
+   hits.append(label+(' (your professor)' if doc.get('same_instructor') else ''))
+ return hits
 
 def official_solution_text(doc,problem):
  if not doc.get('solution_path') or not problem.get('solution_pages'):return None
@@ -431,7 +442,8 @@ def make_plan(ident,day=None):
    outstanding=[r for r in rows if r[4]]
    quota=paced_quota(len(outstanding),e['days'],major)*(2 if ahead else 1)
    # Known mistakes first, then what was never studied, then due reviews, in the listed order.
-   order=sorted(outstanding,key=lambda r:{'error':0,'new':1,'practiced':2}.get(r[3],3))
+   tested={r[1]:past_exam_hits(course,r[0]['query'],catalog) for r in outstanding}
+   order=sorted(outstanding,key=lambda r:({'error':0,'new':1,'practiced':2}.get(r[3],3),-len(tested[r[1]])))
    today_keys={r[1] for r in order[:quota]}
    for i,(t,tkey,sk,st,need) in enumerate(rows):
     entry={'title':t['title'],'state':st,'uid':None}
@@ -449,7 +461,8 @@ def make_plan(ident,day=None):
     mode='repair' if sk.get('last_error') else 'retrieval' if st in ('independent','retained') else 'learn'
     facts={'course':LABELS[course],'preparing_for':e['name']+' · '+e['date']+(' (in %d days)'%e['days'] if e['days'] else ' (today)'),'topic':t['title'],
            'scope_basis':basis,'expected_formats':', '.join(t.get('formats',[])) or None,'skill_status':sk.get('status'),'last_error':sk.get('last_error'),
-           'course_grade':grade_facts(course),'low_exam_scores':recent_exam_scores(course)}
+           'course_grade':grade_facts(course),'low_exam_scores':recent_exam_scores(course),
+           'on_past_exams':('; '.join(tested.get(tkey,[])[:4]) or None)}
     teach=[teaching_ref(t['teaching'])] if t.get('teaching') else None
     slot=make_slot(course,sk,t['title'],t['query'],mode,urgency-i,facts,is_test,teach,ob['id']);slot['days']=e['days'];slot['_skill']=sk
     slots.append(slot);used_skills.add(sk['id']);slotted[tkey]=slot
@@ -460,7 +473,8 @@ def make_plan(ident,day=None):
     pool=[(d,p) for d in catalog if d['course']==course and re.search(r'exam|midterm|sample|ex\d+pr|revision|quiz|lab',d['title'],re.I) for p in d['problems'] if not p.get('needs_figure')]
     pool=[(d,p) for d,p in pool if len(words(' '.join(p.get('skills',[]))+' '+p['structure'])&words(' '.join(t['query'] for t in topics)))>=1]
     picks=[];seen_struct=set()
-    for d,p in sorted(pool,key=lambda x:(-x[1]['difficulty'],x[1]['id'])):
+    # Real past exams first (this professor's before others'), so the rehearsal is the real thing.
+    for d,p in sorted(pool,key=lambda x:(-int(bool(x[0].get('same_instructor'))),-int(bool(x[0].get('past_exam'))),-x[1]['difficulty'],x[1]['id'])):
      if p['structure'] in seen_struct:continue
      seen_struct.add(p['structure']);picks.append((d,p))
      if len(picks)==3:break

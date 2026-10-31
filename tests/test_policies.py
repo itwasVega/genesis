@@ -332,6 +332,76 @@ _al=dict(CN.aliases())
 check('notes find classes by code (any spacing), name and everyday words',re.search(_al['COP3502C'],'cop 3502 quiz',re.I) and re.search(_al['MAC2311C'],'calc test moved',re.I) and re.search(_al['COP3330'],'java exam',re.I))
 _cf.write_text(_saved)
 
+# ---------- the scout: public course material from the school's own site, nothing else ----------
+import school_hq_scout as S,school_hq_ai as AI,school_hq_library as LIB
+check('the whole school site, from an email or Canvas host',S.registrable('knights.state.edu')=='state.edu' and S.registrable('canvas.cs.ox.ac.uk')=='ox.ac.uk')
+check('school pages are allowed, on any of its subdomains',S.allowed('https://www.cs.state.edu/~prof/cop3502/exam2.pdf','state.edu') and S.allowed('http://state.edu/x.pdf','state.edu'))
+check('other sites are not',not S.allowed('https://notstate.edu/x.pdf','state.edu') and not S.allowed('https://state.edu.evil.com/x.pdf','state.edu'))
+check('answer-sharing sites never, even on a school-looking host',not S.allowed('https://www.chegg.com/x','chegg.com') and not S.allowed('https://quizlet.com/x','quizlet.com'))
+check('no logins, odd ports or path tricks',not S.allowed('https://u:p@cs.state.edu/x','state.edu') and not S.allowed('https://cs.state.edu:8443/x','state.edu') and not S.allowed('https://cs.state.edu/a/../b','state.edu') and not S.allowed('ftp://cs.state.edu/x','state.edu'))
+check('past exams and their keys are kept',S.integrity_ok({'title':'Exam 2 Fall 2024 Key','url':'https://cs.state.edu/exam2key.pdf'}) and S.integrity_ok({'title':'Practice Final','url':'https://cs.state.edu/pf.pdf'}))
+check('answers to graded homework and programs are not',not S.integrity_ok({'title':'Homework 3 Solutions','url':'x'}) and not S.integrity_ok({'title':'','url':'https://cs.state.edu/program4_solution.pdf'}) and not S.integrity_ok({'title':'Lab 5 answer key','url':'x'}))
+_d=S.validate_discovery({'school_domain':'evil.com','items':[{'url':'https://cs.state.edu/e.pdf','kind':'past_exam','title':'Exam 1'},{'url':'https://cs.state.edu/x','kind':'cheat_sheet'}]})
+check('the model only proposes; unknown kinds and non-school domains are dropped',len(_d['items'])==1 and _d['school_domain']=='')
+check('an academic domain from search is accepted',S.validate_discovery({'school_domain':'www.state.edu','items':[]})['school_domain']=='state.edu')
+
+class _Resp:
+ def __init__(s,url,data,kind):s.url=url;s._d=data;s.headers={'Content-Type':kind}
+ def read(s,n=-1):return s._d
+ def __enter__(s):return s
+ def __exit__(s,*a):return False
+class _Web:
+ pages={'https://cs.state.edu/cop3502/exams.html':(b'<html><body>COP 3502 exams <a href="exam2-f24.pdf">Exam 2</a> <a href="hw3_solutions.pdf">HW3 solutions</a> <a href="https://www.chegg.com/x.pdf">x</a> <a href="exam2-f24-key.pdf">key</a></body></html>','text/html'),
+        'https://cs.state.edu/cop3502/exam2-f24.pdf':(b'%PDF-1.4 exam','application/pdf'),
+        'https://cs.state.edu/cop3502/exam2-f24-key.pdf':(b'%PDF-1.4 key','application/pdf')}
+ fetched=[]
+ def open(s,req,timeout=20):
+  u=req.full_url;s.fetched.append(u)
+  if u not in s.pages:raise ValueError('404')
+  return _Resp(u,*s.pages[u])
+_cf=root/'School HQ Study/connections.json';_saved=_cf.read_text()
+_v=json.loads(_saved);_v['canvas_host']='canvas.state.edu';_v['school_email']='me@knights.state.edu';_cf.write_text(json.dumps(_v))
+_real=S.discover
+S.discover=lambda c,sch,ex,**k:{'items':[{'url':'https://cs.state.edu/cop3502/exams.html','title':'Exam page','kind':'course_site','term':'Fall 2024','instructor':'Dr. Lee','exam':''},
+ {'url':'https://www.coursehero.com/file/1','title':'leak','kind':'past_exam','term':'','instructor':'','exam':''}],'instructors':['Ada Lee'],'school_domain':''}
+_course={'id':'COP3502C','label':'Computer Science I','term':'Fall 2026','instructors':['Ada Lee']}
+_rec=S.scout(_course,'scout-test',root,opener=_Web())
+_urls={m['url'] for m in _rec['materials']}
+check('a listing page leads to its exam PDFs on the same site',{'https://cs.state.edu/cop3502/exam2-f24.pdf','https://cs.state.edu/cop3502/exam2-f24-key.pdf'}<=_urls,_urls)
+check('answer leaks and homework solutions are never fetched',not any('coursehero' in u or 'chegg' in u or 'hw3' in u for u in _Web.fetched),_Web.fetched)
+check('found exams are labelled as exams and keys',{m['category'] for m in _rec['materials'] if m['url'].endswith('.pdf')}=={'exam_questions','exam_solutions'})
+check('the record is saved where the library looks',(root/'School HQ App/Bridge/Courses/COP3502C/scout-current.json').read_bytes()==(root/'School HQ App/Bridge/Runs/scout-test/COP3502C-scout-record.json').read_bytes())
+check('the library lists them as found online',{m['url'] for c,m,w in LIB.found_materials(root,root/'School HQ App/Bridge')}==_urls)
+check('terms are read from file names',S.term_of('Exam2-fall25.pdf')[1]=='Fall 2025' and S.term_of('Exam1-Spr16.pdf')[1]=='Spring 2016' and S.term_of('final_2023.pdf')[1]=='2023' and S.term_of('notes.pdf')[1]=='')
+_links=S.file_links('https://cs.state.edu/c/',['Exam1-Fall13.pdf','Exam1-fall25.pdf','Exam1-fall25-key.pdf','Exam2-Spr24.pdf'],'state.edu','COP3502C')
+check('newest exams come first, each next to its key',[x['title'] for x in _links]==['Exam1-fall25.pdf','Exam1-fall25-key.pdf','Exam2-Spr24.pdf','Exam1-Fall13.pdf'],[x['title'] for x in _links])
+check('a page mentioning COP 3502 counts for COP3502C',S.mentions_class('Exams for COP 3502, fall',' COP3502C'.strip()) and not S.mentions_class('MAC 2311 exams','COP3502C'))
+check('a class just scouted is not scouted again',not S.due(_course,root))
+check('a new professor means a fresh look',S.due({**_course,'instructors':['Someone Else']},root))
+S.discover=_real;_cf.write_text(_saved)
+
+_cat=[{'course':'COP3502C','past_exam':True,'same_instructor':True,'term':'Fall 2024','title':'exam2-f24.pdf','problems':[{'skills':['linked list deletion'],'structure':'write code'}]},
+      {'course':'COP3502C','past_exam':False,'title':'notes.pdf','problems':[{'skills':['linked list deletion'],'structure':'x'}]}]
+check('topics on past exams are marked, with term and professor',E.past_exam_hits('COP3502C','linked list deletion',_cat)==['Fall 2024 exam2-f24 (your professor)'])
+check('topics never tested before are not',E.past_exam_hits('COP3502C','recursion trees',_cat)==[])
+
+# ---------- AI models: Auto by default, Manual on request ----------
+_models=[{'model':'big-1','isDefault':True,'description':'Most capable','supportedReasoningEfforts':[{'reasoningEffort':e} for e in ('low','medium','high','xhigh')]},
+         {'model':'big-1-mini','description':'Fast and cheap','supportedReasoningEfforts':[{'reasoningEffort':e} for e in ('low','medium')]},
+         {'model':'other-2','description':'Strong reasoning','supportedReasoningEfforts':[{'reasoningEffort':e} for e in ('low','medium','high')]}]
+check('Auto writes problems with the main model at high effort',AI.auto_route('generate',_models)==('big-1','high'))
+check('Auto checks them with a different strong model',AI.auto_route('verify',_models)==('other-2','high'))
+check('Auto uses the quick model for small jobs',AI.auto_route('context',_models)==('big-1-mini','low') and AI.auto_route('catalog',_models)==('big-1-mini','medium'))
+check('Auto never asks a model for an effort it lacks',AI.fit_effort(_models[1],'high')=='medium')
+check('Auto with one model: verification is a separate session of it',AI.auto_route('verify',_models[:1])==('big-1','high'))
+_mf=root/'school_hq_models.json';_ms=_mf.read_text() if _mf.exists() else None
+_mf.write_text(json.dumps({'mode':'manual','jobs':{'generate':{'model':'mine','effort':'max'}}}))
+check('Manual uses exactly what was chosen',AI.route('generate')==('mine','max') and AI.mode()=='manual')
+_mf.write_text(json.dumps({'jobs':{'generate':{'model':'mine','effort':'max'}}}))
+check('no mode set means Auto',AI.mode()=='auto')
+if _ms is None:_mf.unlink()
+else:_mf.write_text(_ms)
+
 print('passed',passed[0],'failed',len(fails))
 for f in fails:print('FAIL',f)
 sys.exit(1 if fails else 0)

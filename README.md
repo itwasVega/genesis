@@ -27,6 +27,7 @@
 - **Checks your work** against a rubric, including photos and PDFs of handwritten work. Answers you fix the same day count as repaired, and answers you got with a hint count as supported, so your progress is honest.
 - **One box for every answer.** Type, drop in a PDF or screenshot of your iPad notes, or use the paperclip to choose a file or take a photo, scan or sketch straight from your iPhone or iPad.
 - **A companion that feels like a friend.** The heart of Genesis: a small living orb that shows up on its own, when you're stuck, about to drift, done for the day, or just to check in. Every appearance starts with a choice (talk, or not now), and you lead every conversation. Its light gathers into a face that follows the moment. Need quiet? Turn it off in **Settings** for an hour, until tomorrow, or until you turn it back on.
+- **Finds your class's past exams.** Genesis searches your school's own website for past exams, practice exams, answer keys, review sheets and old syllabi, and builds your practice and timed sets from them. Only your school's site, never answer-sharing sites.
 - **Rapid-fire notes from your phone.** "Missed class." "Test moved to Friday." "Quiz covers 4.2." Your plan reshapes around them. Nothing to set up: it starts working the first time you send a note.
 
 ## Plugins

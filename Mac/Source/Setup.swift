@@ -189,7 +189,8 @@ final class SetupFlow: ObservableObject {
             var id = Self.shortID(f); var n = 2
             while used.contains(id) { id = Self.shortID(f) + "-\(n)"; n += 1 }
             used.insert(id)
-            rows.append(GenesisCourse(id: id, label: Self.friendlyName(f), canvas_id: f.id, aliases: nil, language: nil))
+            rows.append(GenesisCourse(id: id, label: Self.friendlyName(f), canvas_id: f.id, aliases: nil, language: nil,
+                                      instructors: f.teachers.isEmpty ? nil : f.teachers, term: f.term.isEmpty ? nil : f.term))
         }
         c.courses = rows
         c.canvas_host = host; c.canvas_auth = method ?? auth

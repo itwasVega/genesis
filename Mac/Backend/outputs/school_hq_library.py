@@ -28,6 +28,21 @@ def professor_materials(root,store):
    except ValueError:continue
    if not path.is_file() or path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest()!=item['sha256']:continue
    yield course,item,record.get('checked_at')
+def found_materials(root,store):
+ """What the scout found online: verified bytes on the school's own site, matched to their run record."""
+ for current in (store/'Courses').glob('*/scout-current.json'):
+  if current.is_symlink():continue
+  record=read(current,{});ident=record.get('request_id','');course=record.get('course')
+  if course!=current.parent.name or not ident or Path(ident).name!=ident:continue
+  archived=store/'Runs'/ident/(course+'-scout-record.json')
+  if not archived.is_file() or archived.is_symlink() or archived.read_bytes()!=current.read_bytes():continue
+  for item in record.get('materials',[]):
+   if item.get('status')!='verified' or not item.get('sha256'):continue
+   path=Path(item.get('path',''))
+   try:path.resolve().relative_to(root.resolve())
+   except ValueError:continue
+   if not path.is_file() or path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest()!=item['sha256']:continue
+   yield course,item,record.get('checked_at')
 def main():
  assets=[];courses={};seen={};current_notes=set();verified=[]
  def add(p,kind,course,title=None,expected=None,**provenance):
@@ -72,6 +87,13 @@ def main():
  for course,m,captured in professor_materials(ROOT,STORE):
   category=m.get('category','reference')
   add(m['path'],'Professor · '+category.replace('_',' '),course,m['title'],m['sha256'],source_url=m.get('url'),category=category,page_count=m.get('page_count'),captured_at=captured,verification_state='verified_bytes_not_learning_coverage')
+ for course,m,captured in found_materials(ROOT,STORE):
+  category=m.get('category','reference')
+  when=' · '.join(x for x in (m.get('term'),m.get('instructor')) if x)
+  add(m['path'],'Found online · '+m.get('label',category.replace('_',' ')),course,(m['title']+(' ('+when+')' if when else ''))[:200],m['sha256'],
+      source_url=m.get('url'),category=category,page_count=m.get('page_count'),captured_at=captured,found_online=True,
+      term=m.get('term'),instructor=m.get('instructor'),same_instructor=bool(m.get('same_instructor')),exam=m.get('exam'),
+      verification_state='verified_bytes_not_learning_coverage')
  # Preserve legacy readable references/history on disk. Show only the verified current
  # derivative for a notebook already represented above, and deduplicate identical bytes.
  grades=read(ROOT/'Canvas School Source/gradebooks.json',{})

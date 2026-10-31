@@ -34,6 +34,9 @@ def check(client_factory=None):
         atomic(ROOT/'School HQ Study/ai-available.json', {'models': list(models), 'details': available})
         config_path = ROOT/'school_hq_models.json'
         config = json.loads(config_path.read_text())
+        if config.get('mode') != 'manual':
+            # Auto: Genesis picks per job from this list every time; nothing to rewrite.
+            return {'ok': True, 'detail': 'Connected. Genesis picks the right model and strength for each job automatically.', 'models': list(models)}
         selected = next((x['model'] for x in available if x.get('isDefault')), next(iter(models)))
         alternate = next((m for m in models if m != selected), selected)
         changed = False

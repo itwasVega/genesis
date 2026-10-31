@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0 (52) — October 31, 2026
+
+### Added
+- **Genesis finds your class's past exams.** For each class, Genesis searches your school's own website for past exams and practice exams (with answer keys), review sheets, department exam archives, the professor's course pages and old syllabi, then folds them into your plan. Practice comes from real past exams, timed sets rehearse them (your professor's first), and topics that came up on past exams go first. It looks again before each exam. Nothing to set up.
+- **Safe by design.** Only your school's own site is read. Homework-answer and leak sites are never touched, and nothing that looks like answers to graded homework or projects is kept.
+
+### Changed
+- **Models are Auto.** Genesis picks the AI model and strength for every job from what your account offers, and checks problems with a different model when it can. Want control? Settings › Models › Manual lets you choose each job's model and strength.
+
 ## 1.0 (51) — October 31, 2026
 
 ### Changed

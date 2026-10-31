@@ -274,8 +274,9 @@ struct SettingsView: View {
 
     struct ModelJob: Identifiable { var id: String; var model: String; var effort: String; var why: String }
     @State private var modelChoices = ["auto"]
+    @State private var modelMode = "auto"
     let effortChoices = ["low", "medium", "high", "xhigh", "max"]
-    let jobTitles = ["catalog": "Read practice files", "context": "Label your notes", "facts": "Exam updates", "generate": "Write problems", "verify": "Check problems", "grade": "Grade answers", "companion": "Help when you're stuck"]
+    let jobTitles = ["catalog": "Read practice files", "context": "Label your notes", "facts": "Exam updates", "generate": "Write problems", "verify": "Check problems", "grade": "Grade answers", "companion": "Help when you're stuck", "scout": "Find past exams"]
 
     var configURL: URL { model.outputs.appendingPathComponent("school_hq_models.json") }
 
@@ -292,17 +293,24 @@ struct SettingsView: View {
                 if !aiMessage.isEmpty { Text(aiMessage).font(.caption) }
             }
             Section {
-                Text("Each job uses the model that fits it. Problems are checked in a separate verification session. Choose a different available model for that step when possible.")
+                Picker("Models", selection: $modelMode) { Text("Auto").tag("auto"); Text("Manual").tag("manual") }
+                    .pickerStyle(.segmented)
+                    .onChange(of: modelMode) { _, value in saveMode(value) }
+                Text(modelMode == "auto"
+                     ? "Genesis picks the model and strength for every job from what your account offers, and checks every problem with a different model when it can."
+                     : "Choose the model and strength for each job.")
                     .font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
             }
-            ForEach($models) { $job in
-                Section(jobTitles[job.id] ?? job.id) {
-                    Picker("Model", selection: $job.model) { ForEach(modelChoices, id: \.self) { Text($0) } }
-                    Picker("Effort", selection: $job.effort) { ForEach(effortChoices, id: \.self) { Text($0) } }
-                    Text(job.why).font(Typeface.sans(11)).foregroundStyle(Theme.tertiary)
+            if modelMode == "manual" {
+                ForEach($models) { $job in
+                    Section(jobTitles[job.id] ?? job.id) {
+                        Picker("Model", selection: $job.model) { ForEach(modelChoices, id: \.self) { Text($0) } }
+                        Picker("Strength", selection: $job.effort) { ForEach(effortChoices, id: \.self) { Text($0) } }
+                        Text(job.why).font(Typeface.sans(11)).foregroundStyle(Theme.tertiary)
+                    }
                 }
+                Section { Button("Save model choices") { saveModels() } }
             }
-            Section { Button("Save model choices") { saveModels() } }
         }
         .formStyle(.grouped)
     }
@@ -311,9 +319,16 @@ struct SettingsView: View {
         let available = model.outputs.appendingPathComponent("School HQ Study/ai-available.json")
         if let data = try? Data(contentsOf: available), let value = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let names = value["models"] as? [String] { modelChoices = names }
         guard let data = try? Data(contentsOf: configURL), let v = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let jobs = v["jobs"] as? [String: [String: String]] else { return }
-        let order = ["generate", "verify", "grade", "catalog", "facts", "context", "companion"]
+        modelMode = (v["mode"] as? String) == "manual" ? "manual" : "auto"
+        let order = ["generate", "verify", "grade", "scout", "catalog", "facts", "context", "companion"]
         models = order.compactMap { k in jobs[k].map { ModelJob(id: k, model: $0["model"] ?? "gpt-6.1-sol", effort: $0["effort"] ?? "medium", why: $0["why"] ?? "") } }
         modelChoices = Array(Set(modelChoices + models.map(\.model))).sorted()
+    }
+
+    func saveMode(_ value: String) {
+        guard let data = try? Data(contentsOf: configURL), var v = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+        v["mode"] = value
+        if let out = try? JSONSerialization.data(withJSONObject: v, options: [.prettyPrinted, .sortedKeys]) { try? out.write(to: configURL, options: .atomic) }
     }
 
     func saveModels() {
