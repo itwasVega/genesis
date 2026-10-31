@@ -9,10 +9,9 @@ from zoneinfo import ZoneInfo
 
 ROOT=Path(__file__).resolve().parent
 FILE=ROOT/'School HQ Study/context-notes.json'
-ALIASES=[('COP3330',r'java|oop|object.oriented|cop\s*3330|guha'),('COP3502C',r'\bcs\s*1\b|cs1|computer science (?:1|i)\b|cop\s*3502|\bc\b programming|pointers?|linked lists?'),
-         ('MAC2311C',r'calc(?:ulus)?|mac\s*2311|derivative|integral|limit'),('COT3100C',r'discrete|cot\s*3100|proofs?|logic')]
+ALIASES=__import__('school_hq_connections').aliases()   # from the student's own classes
 
-def today():return datetime.now(ZoneInfo('America/New_York')).date()
+def today():return datetime.now(__import__('school_hq_connections').zone()).date()
 def load():
  try:v=json.loads(FILE.read_text())
  except (OSError,ValueError):v={}

@@ -15,7 +15,7 @@ def write(p,d):
 def event(d,title,body):
  d['events'].append({'id':str(uuid.uuid4()),'title':title,'body':body,'at':now()});d['events']=d['events'][-80:]
 def eligible_date(r):
- t=datetime.fromisoformat(r['requested_at']).astimezone(ZoneInfo('America/New_York'))
+ t=datetime.fromisoformat(r['requested_at']).astimezone(__import__('school_hq_connections').zone())
  return r.get('eligible_date') or (t.date()+timedelta(days=1 if t.hour>=22 else 0)).isoformat()
 def parse_stamp(value):
  try:
@@ -71,7 +71,7 @@ def apply(d,a):
    if configured['id']!=policy or configured['required_sources']!=SOURCES:raise ValueError('Local policy must require Canvas')
    d['request']['policy_id']=policy
    d['request']['policy_sha256']=__import__('hashlib').sha256((ROOT/'school_hq_local_policy.json').read_bytes()).hexdigest()
-  d['request']['eligible_date']=datetime.now(ZoneInfo('America/New_York')).date().isoformat()
+  d['request']['eligible_date']=datetime.now(__import__('school_hq_connections').zone()).date().isoformat()
   if getattr(a,'context_file',None):
    from school_hq_brief_context import attach
    attach(ROOT,d['request'],a.context_file)
@@ -105,7 +105,7 @@ def apply(d,a):
   record_history(d)
   event(d,'School HQ needs attention',a.detail);return d['request']
  if a.action=='remind':
-  day=datetime.now().astimezone(__import__('zoneinfo').ZoneInfo('America/New_York')).date().isoformat()
+  day=datetime.now().astimezone(__import__('zoneinfo').__import__('school_hq_connections').zone()).date().isoformat()
   if d.get('last_reminder')!=day and not ready(d):
    d['last_reminder']=day;event(d,'Your plan is waiting for a sync','Open Genesis and Sync to check Canvas.')
   return {'status':'waiting for manual sync' if not ready(d) else 'ready'}
@@ -163,7 +163,7 @@ def apply(d,a):
   p=Path(supplied).resolve();allowed=ROOT/'School HQ Study'
   if allowed.resolve() not in p.parents or p.suffix!='.json':raise ValueError('Packet must be inside School HQ Study')
   packet=json.loads(p.read_text());date=packet.get('date')
-  if date!=datetime.now(ZoneInfo('America/New_York')).date().isoformat():raise ValueError('New brief needs the current Eastern date')
+  if date!=datetime.now(__import__('school_hq_connections').zone()).date().isoformat():raise ValueError('New brief needs the current Eastern date')
   with (allowed/'.coaching.lock').open('a') as coaching_lock:
    fcntl.flock(coaching_lock,fcntl.LOCK_EX)
    learning=load(ROOT);tasks,rubrics=validate_packet(packet,ROOT,learning)

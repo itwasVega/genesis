@@ -38,6 +38,10 @@ struct SettingsView: View {
             general.tabItem { Label("General", systemImage: "gearshape") }
         }
         .frame(width: 620, height: 560)
+        .sheet(item: $model.setupPlugin) { item in
+            WelcomeView(flow: SetupFlow(model: model, only: item.id) { model.setupPlugin = nil; model.loadPlugins(); loadConnections() })
+                .environmentObject(model).frame(width: 760, height: 640)
+        }
         .onAppear { loadModels(); loadMail(); loadConnections() }
     }
 
@@ -47,35 +51,21 @@ struct SettingsView: View {
         Form {
             if model.plugins.contains("canvas") {
             Section("Canvas") {
-                Text("Signs in through Genesis's own browser. UCF doesn't allow API keys, so the app reads Canvas the way you see it, read-only.")
-                    .font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
-                Text("This beta supports UCF Webcourses. Add each class using the number in its Canvas URL after /courses/.").font(.caption)
+                LabeledContent("School", value: connections.canvas_host.isEmpty ? "not set" : connections.canvas_host)
+                LabeledContent("Connected with", value: connections.canvas_auth == "token" ? "an access token" : "your normal sign-in")
                 ForEach(connections.courses) { course in
-                    HStack {
-                        Text(course.label + " · " + course.id)
-                        Spacer()
-                        Button("Remove") {
-                            var updated = connections
-                            updated.courses.removeAll { $0.id == course.id }
-                            saveConnections(updated)
-                        }
-                    }
+                    LabeledContent(course.label, value: course.id)
                 }
-                TextField("Class code", text: $classCode)
-                TextField("Class name", text: $className)
-                TextField("Canvas course ID", text: $canvasID)
-                Button("Add class") {
-                    var updated = connections
-                    updated.courses.append(GenesisCourse(id: classCode.trimmingCharacters(in: .whitespacesAndNewlines), label: className.trimmingCharacters(in: .whitespacesAndNewlines), canvas_id: canvasID.trimmingCharacters(in: .whitespacesAndNewlines)))
-                    if saveConnections(updated) { classCode = ""; className = ""; canvasID = "" }
+                HStack {
+                    Button("Find my classes again") { model.setupPlugin = PluginSetupID(id: "canvas") }
+                    Button("Change school or sign-in") { model.setupPlugin = PluginSetupID(id: "canvas") }
                 }
                 if !setupMessage.isEmpty { Text(setupMessage).font(.caption) }
-                Button("Sign in to Canvas") { model.canvasSignIn = true }
             }
             }
             if model.plugins.contains("email") {
             Section("Email") {
-                Text("Not needed for your plan: exam dates and scope come from Canvas announcements. Connect a mailbox to make Canvas and UCF emails searchable in Library. Read-only; nothing is marked read or changed.")
+                Text("Emails from Canvas and your school, searchable in Library. Read-only: nothing is marked read, sent or deleted.")
                     .font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
                 if let address = mailConnected {
                     LabeledContent("Connected", value: address)
@@ -119,7 +109,9 @@ struct SettingsView: View {
             }
             if model.plugins.contains("calendar") {
             Section("Canvas calendar") {
-                SecureField("Private Webcourses .ics link", text: $feed)
+                Text("Picked up from your Canvas automatically. If it ever stops, grab it again here.").font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
+                Button("Pick it up again") { model.setupPlugin = PluginSetupID(id: "calendar") }
+                SecureField("or paste your Canvas calendar's .ics link", text: $feed)
                 Button("Save to Keychain") { saveFeed() }.disabled(feed.isEmpty)
                 if !feedMessage.isEmpty { Text(feedMessage).font(Typeface.sans(12)) }
             }
@@ -225,7 +217,7 @@ struct SettingsView: View {
 
 
     func saveFeed() {
-        guard let url = URL(string: feed), url.scheme == "https", url.host == "webcourses.ucf.edu", url.path.hasSuffix(".ics") else { feedMessage = "Paste the private https://webcourses.ucf.edu/… .ics link."; return }
+        guard let url = URL(string: feed), url.scheme == "https", url.host == connections.canvas_host, url.path.hasSuffix(".ics") else { feedMessage = "Paste the private .ics link from your Canvas calendar."; return }
         let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "SchoolHQ.CanvasCalendar.v1", kSecAttrAccount as String: "private-feed"]
         let data = Data(feed.utf8)
         var status = SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
@@ -341,6 +333,9 @@ struct SettingsView: View {
                     Text("Every day starts from what's actually on your courses.").font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
                 }
                 .padding(.vertical, 4)
+            }
+            Section("Welcome") {
+                Button("Meet Genesis again") { model.welcoming = true }
             }
             Section("Appearance") {
                 Picker("Theme", selection: Binding(get: { model.appearance }, set: { model.setAppearance($0) })) {

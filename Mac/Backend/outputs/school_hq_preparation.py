@@ -53,7 +53,7 @@ def validate(payload,root):
 def assessment_active(a,when):
  if a.get('status','scheduled') in ('cancelled','completed') or not a.get('date'):return False
  try:
-  zone=ZoneInfo(a.get('timezone','America/New_York'));local=when.astimezone(zone);day=date.fromisoformat(a['date'])
+  zone=ZoneInfo(a.get('timezone') or __import__('school_hq_connections').zone_name());local=when.astimezone(zone);day=date.fromisoformat(a['date'])
   if day!=local.date():return day>local.date()
   if a.get('time') and a.get('duration_minutes'):
    end=datetime.fromisoformat(a['date']+'T'+a['time']).replace(tzinfo=zone)+timedelta(minutes=a['duration_minutes'])
@@ -80,7 +80,7 @@ def planning_state(root,state,when=None):
 def build(root=ROOT,when=None,brief_override=None,state_override=None):
  import school_hq_coaching as c
  from school_hq_planning import priorities,listed_deadlines,verified_grades
- root=Path(root);when=when or now();day=when.astimezone(ZoneInfo('America/New_York')).date();bridge=root/'School HQ App/Bridge'
+ root=Path(root);when=when or now();day=when.astimezone(__import__('school_hq_connections').zone()).date();bridge=root/'School HQ App/Bridge'
  state=planning_state(root,c.load(root) if state_override is None else state_override,when);state['_verified_grades']=verified_grades(root);state['_listed_deadlines']=listed_deadlines(root)
  ranked=priorities(state,day);scores={x['course']:x['priority'] for x in ranked}
  pipeline=read(bridge/'state.json',{});brief=(pipeline.get('brief') or {}) if brief_override is None else brief_override;journal=read(root/'School HQ Study/learning-journal.json',{'attempts':[]});bank=read(root/'School HQ Study/lesson-bank.json',{'lessons':[]})

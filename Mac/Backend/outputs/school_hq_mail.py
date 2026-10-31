@@ -3,7 +3,7 @@
 
 Read-only by construction: the mailbox is opened with EXAMINE (readonly select) and bodies are
 fetched with BODY.PEEK, so nothing is marked read, moved or deleted. Only messages from Canvas
-(instructure.com) and UCF senders are saved, as plain text, for Library search. The password is
+(instructure.com) and senders from the student's school are saved, as plain text, for Library search. The password is
 an app password kept in the macOS Keychain (service Genesis.Mail.v1); it is never written to disk
 or logs. Failures never block a sync.
 
@@ -21,7 +21,11 @@ ROOT=Path(__file__).resolve().parent
 CONFIG=ROOT/'School HQ Study/mail.json'
 OUT=ROOT/'School HQ App/Bridge/Mail'
 SERVICE='Genesis.Mail.v1'
-SENDER=re.compile(r'(?:@|\.)(?:instructure\.com|ucf\.edu)$',re.I)
+def _sender():
+ # Canvas notifications plus the student's own school domain (from setup), nothing else.
+ domain=__import__('school_hq_connections').school_domain()
+ return re.compile(r'(?:@|\.)(?:instructure\.com'+('|'+re.escape(domain) if domain else '')+r')$',re.I)
+SENDER=_sender()
 WINDOW_DAYS=30
 MAX_NEW=150
 
@@ -109,7 +113,9 @@ def collect():
   if validity and state.get('uidvalidity') not in (None,validity):state={}
   last=int(state.get('last_uid') or 0)
   since=(datetime.now(timezone.utc)-timedelta(days=WINDOW_DAYS)).strftime('%d-%b-%Y')
-  typ,data=m.uid('search',None,'(SINCE %s OR FROM "instructure.com" FROM "ucf.edu")'%since)
+  domain=__import__('school_hq_connections').school_domain()
+  query='(SINCE %s OR FROM "instructure.com" FROM "%s")'%(since,domain) if domain else '(SINCE %s FROM "instructure.com")'%since
+  typ,data=m.uid('search',None,query)
   if typ!='OK':raise MailFailure('The mail search failed.')
   uids=sorted(int(u) for u in (data[0] or b'').split() if int(u)>last)[-MAX_NEW:]
   for uid in uids:

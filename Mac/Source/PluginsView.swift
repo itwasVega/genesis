@@ -25,7 +25,7 @@ struct PluginCard: View {
                 if hover || on { Text(plugin.detail).font(Typeface.sans(11.5)).foregroundStyle(Theme.tertiary).fixedSize(horizontal: false, vertical: true).transition(.opacity) }
             }
             Spacer(minLength: 8)
-            Button { withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { model.setPlugin(plugin.id, !on) } } label: {
+            Button { withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { if on { model.setPlugin(plugin.id, false) } else { model.addPlugin(plugin.id) } } } label: {
                 HStack(spacing: 5) {
                     Image(systemName: on ? "checkmark" : "plus").font(.system(size: 10.5, weight: .bold))
                     Text(on ? "Added" : "Add")
@@ -51,24 +51,3 @@ struct PluginList: View {
     }
 }
 
-/// First launch: pick what you need. Nothing is on until you add it.
-struct PluginPicker: View {
-    @EnvironmentObject var model: AppModel
-    var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Make Genesis yours.").font(Typeface.serif(30))
-                Text("Pick where Genesis gathers what it needs to build your brief: assignments, documents, dates and announcements. Anything you skip never runs, and you can change this any time in Settings › Plugins.")
-                    .font(Typeface.sans(13)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
-            }
-            ScrollView { PluginList().padding(.vertical, 2) }.frame(maxHeight: 430)
-            HStack {
-                Text(model.plugins.isEmpty ? "Nothing added yet" : "\(model.plugins.count) added").font(Typeface.sans(12)).foregroundStyle(Theme.tertiary)
-                Spacer()
-                Button(model.plugins.isEmpty ? "Skip for now" : "Done") { model.finishPluginChoice() }.primaryAction()
-            }
-        }
-        .padding(28)
-        .frame(width: 560)
-    }
-}

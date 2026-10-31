@@ -109,7 +109,7 @@ def canvas(ident,started,db):
    if not start<=captured<=now:raise RuntimeError('Canvas capture is stale or future dated')
    from urllib.parse import urlparse
    url=urlparse(row['url'])
-   if url.hostname!='webcourses.ucf.edu' or not url.path.startswith('/courses/'+cid+'/'):raise RuntimeError('Canvas capture course/origin mismatch')
+   if url.hostname!=__import__('school_hq_connections').canvas_host() or not url.path.startswith('/courses/'+cid+'/'):raise RuntimeError('Canvas capture course/origin mismatch')
    if not row.get('body','').strip() or row.get('authenticated') is not True:raise RuntimeError('Canvas page is not authenticated/loaded')
    if kind=='grades':
     grades=row.get('grades',{})
@@ -228,24 +228,25 @@ def main():
    active(ident)
    progress(ident,'supplements',0.36,'Reading email, professor materials and calendar…')
    def professor():
-    # This optional legacy catalog is never enabled by enrollment alone.
-    from school_hq_connections import read as connections
+    # An optional, workspace-local reader for one professor's public site. It ships with no
+    # school's code; it runs only if that workspace has its own module and switch.
     from school_hq_connections import enabled
-    if not enabled("professor_sites"): return
+    import importlib.util
+    if not enabled("professor_sites") or importlib.util.find_spec("school_hq_cop3330") is None: return
+    module=importlib.import_module("school_hq_cop3330");course=getattr(module,"COURSE",None) or "professor-site"
     pdb=store.connect()
     try:
-     from school_hq_cop3330 import collect as collect_course
-     store.event(pdb,ident,'collecting:cop3330-professor','Checking public professor materials; Canvas collection retained')
+     store.event(pdb,ident,'collecting:professor-site','Checking public professor materials; Canvas collection retained')
      with timed(pdb,ident,'professor-site'):
-      result=collect_course(BRIDGE,ident,BRIDGE/'Receipts'/(ident+'-canvas.json') if (BRIDGE/'Receipts'/(ident+'-canvas.json')).exists() else None,guard=lambda:active(ident))
-     store.event(pdb,ident,'checked:cop3330-professor',result['professor_site']['status']+'; '+str(result['professor_site']['verified_materials'])+' verified materials')
+      result=module.collect(BRIDGE,ident,BRIDGE/'Receipts'/(ident+'-canvas.json') if (BRIDGE/'Receipts'/(ident+'-canvas.json')).exists() else None,guard=lambda:active(ident))
+     store.event(pdb,ident,'checked:professor-site',result['professor_site']['status']+'; '+str(result['professor_site']['verified_materials'])+' verified materials')
      for material in result['professor_site']['materials']:
       if material.get('text_path'):
-       try:store.index(pdb,material['text_path'],'COP3330','professor-instruction')
+       try:store.index(pdb,material['text_path'],course,'professor-instruction')
        except (UnicodeError,ValueError):pass
     except Exception as exc:
-     atomic(BRIDGE/'Runs'/ident/'COP3330-course-record.json',{'course':'COP3330','request_id':ident,'professor_site':{'status':'failed','detail':str(exc)[:500]},'coverage_limits':['Website failure does not replace or pass Canvas. Previous instructional objects preserved.']})
-     store.event(pdb,ident,'failed:cop3330-professor','Supplemental website check failed; Canvas readiness is independent')
+     atomic(BRIDGE/'Runs'/ident/(course+'-course-record.json'),{'course':course,'request_id':ident,'professor_site':{'status':'failed','detail':str(exc)[:500]},'coverage_limits':['Website failure does not replace or pass Canvas. Previous instructional objects preserved.']})
+     store.event(pdb,ident,'failed:professor-site','Supplemental website check failed; Canvas readiness is independent')
     finally:pdb.close()
    def calendar():
     from school_hq_connections import enabled

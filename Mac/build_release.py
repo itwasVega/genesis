@@ -32,7 +32,7 @@ def audit(runtime):
     for path in files:
         for line, text in enumerate(path.read_text().splitlines(),1):
             location = f'{path.relative_to(ROOT)}:{line}'
-            if re.search(r'[A-Za-z0-9._%+-]+@(gmail|icloud|knights\.ucf)\.(com|edu)|/Users/[^/]+/',text): personal.append(location)
+            if re.search(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(com|edu)|/Users/[^/]+/',text): personal.append(location)
             if re.search(r"courses/[0-9]{5,}|'canvas_id'\s*:\s*'[0-9]+'",text): courses.append(location)
             if '/Applications/ChatGPT.app/' in text: client.append(location)
     if personal: issues.append('Personal-account constants still need generalization: '+', '.join(personal))

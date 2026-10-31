@@ -19,13 +19,15 @@ CACHE=STUDY/'task-cache'
 from school_hq_connections import labels
 SHORT=labels()
 LABELS={k:v+' ('+k+')' for k,v in SHORT.items()}
-LANG={'COP3330':'java','COP3502C':'c'}
+class _Lang(dict):
+ def get(self,course,default=None):return __import__('school_hq_connections').language(course) or default
+LANG=_Lang()
 MAX_NORMAL=14   # safety bound on optional work, not a target; work due within three days is never cut by it
 MAX_TASKS=16    # what a published plan may hold (packet validation)
 MODE_MINUTES={'learn':22,'repair':18,'retrieval':10,'mock':45,'prep':22,'catch_up':15,'diagnose':10}   # used only when you set a daily limit
 
 def now():return datetime.now(timezone.utc).isoformat()
-def today():return datetime.now(ZoneInfo('America/New_York')).date()
+def today():return datetime.now(__import__('school_hq_connections').zone()).date()
 def sha_bytes(b):return hashlib.sha256(b).hexdigest()
 def sha(p):return sha_bytes(Path(p).read_bytes())
 def read(p,default=None):
@@ -51,14 +53,15 @@ def iso_mtime(p):
 
 def source_for(doc_path,title,pages,section,url=None,captured=None):
  p=Path(doc_path).resolve()
- location=url if (url and url.startswith('https://') and re.match(r'https://(webcourses\.ucf\.edu|www\.cs\.ucf\.edu|cs\.ucf\.edu)/',url)) else str(p)
+ origin=__import__('school_hq_connections').canvas_origin()
+ location=url if (url and origin and url.startswith(origin+'/')) else str(p)
  cap=captured or iso_mtime(p)
  try:
   when=datetime.fromisoformat(cap.replace('Z','+00:00'))
   if when.tzinfo is None or when>datetime.now(timezone.utc):when=datetime.fromisoformat(iso_mtime(p))
  except ValueError:when=datetime.fromisoformat(iso_mtime(p))
  # Eastern local time: the validator compares the calendar date with the plan date.
- cap=when.astimezone(ZoneInfo('America/New_York')).isoformat()
+ cap=when.astimezone(__import__('school_hq_connections').zone()).isoformat()
  src={'origin':'official','label':title,'section':section[:300],'location':location,'snapshot':str(p),'sha256':sha(p),'captured_at':cap}
  if p.suffix.lower()=='.pdf':src['pages']=sorted(set(int(x) for x in pages))
  return src
@@ -168,7 +171,7 @@ def slide_title(text):
  """First meaningful heading line of a lecture page (e.g. 'Modular Exponentiation')."""
  for line in (text or '').splitlines()[:12]:
   l=line.strip()
-  if 4<=len(l)<=60 and re.search(r'[A-Za-z]{3}',l) and not re.search(r'cop|cot|mac|cis|ucf|fall|spring|professor|dr\.|page|\d{4}|http|@',l,re.I):
+  if 4<=len(l)<=60 and re.search(r'[A-Za-z]{3}',l) and not re.search(r'\b[a-z]{2,4}\s?\d{4}[a-z]?\b|fall|spring|summer|professor|dr\.|page|\d{4}|http|@',l,re.I):
    return l.strip(' :-–')
  return None
 
@@ -624,7 +627,7 @@ MODE_TEXT={
 
 def generation_prompt(slot,day,feedback=None):
  f=slot['facts'];lines=[]
- lines.append('Write ONE study task for a UCF student. Course: '+LABELS[slot['course']]+'. The app already chose what to study; make the task excellent and exact.')
+ lines.append('Write ONE study task for a college student. Course: '+LABELS[slot['course']]+'. The app already chose what to study; make the task excellent and exact.')
  lines.append('\nPLANNER FACTS (use only these as reasons; do not invent others):\n'+'\n'.join('- '+k.replace('_',' ')+': '+(', '.join(v) if isinstance(v,list) else str(v)) for k,v in f.items() if v not in (None,'',[],False)))
  lines.append('\nMODE: '+MODE_TEXT[slot['mode']])
  if slot.get('problem'):

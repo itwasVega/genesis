@@ -55,7 +55,7 @@ def publish(d,args,root,store,interrupt=None):
  supplied=getattr(args,'packet',None)
  if not supplied:raise ValueError('Structured coaching packet required')
  path=c.contained(supplied,root/'School HQ Study');packet=read(path)
- if packet.get('date')!=datetime.now(ZoneInfo('America/New_York')).date().isoformat():raise ValueError('New brief needs current Eastern date')
+ if packet.get('date')!=datetime.now(__import__('school_hq_connections').zone()).date().isoformat():raise ValueError('New brief needs current Eastern date')
  ident=d['request']['id'];destination=store/'Packets'/ident
  if destination.exists():
   manifest=package_valid(destination)

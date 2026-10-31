@@ -43,8 +43,19 @@ struct RootView: View {
                 // The companion orb lives in the window, above the page, out of the way of
                 // the answer box and Check button while a task is open.
                 .overlay(alignment: .bottomTrailing) {
-                    CompanionView().environmentObject(Companion.shared)
-                        .padding(.trailing, 18).padding(.bottom, model.openTask == nil ? 18 : 120)
+                    if !model.welcoming {
+                        CompanionView().environmentObject(Companion.shared)
+                            .padding(.trailing, 18).padding(.bottom, model.openTask == nil ? 18 : 120)
+                    }
+                }
+                .toolbar(model.welcoming ? .hidden : .automatic, for: .windowToolbar)
+                // The first time: pure black, a small light, and then her.
+                .overlay {
+                    if model.welcoming {
+                        WelcomeView(flow: SetupFlow(model: model) { withAnimation(.easeInOut(duration: 1.2)) { model.welcoming = false } })
+                            .environmentObject(model)
+                            .transition(.opacity)
+                    }
                 }
         }
     }
@@ -77,15 +88,16 @@ struct RootView: View {
         .frame(minWidth: 940, minHeight: 640)
         // The Canvas collector needs its web view in the window hierarchy.
         .background {
-            if !model.canvasSignIn {
+            if !model.canvasSignIn && !model.canvasEmbedded {
                 CanvasWebView(canvas: model.canvas).frame(width: 1024, height: 720).opacity(0).allowsHitTesting(false).accessibilityHidden(true)
             }
         }
         .sheet(isPresented: $model.canvasSignIn) {
             CanvasSignIn(canvas: model.canvas) { model.canvasSignIn = false }
         }
-        .sheet(isPresented: $model.choosingPlugins) {
-            PluginPicker().environmentObject(model).interactiveDismissDisabled()
+        .sheet(item: $model.setupPlugin) { item in
+            WelcomeView(flow: SetupFlow(model: model, only: item.id) { model.setupPlugin = nil; model.loadPlugins() })
+                .environmentObject(model).frame(width: 760, height: 640)
         }
     }
 }

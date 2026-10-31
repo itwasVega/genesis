@@ -48,7 +48,7 @@ def source_check(s,root,day,count_pages=pdf_count):
  location=text(s,'location');snapshot=s.get('snapshot') or location
  if location.startswith('https://'):
   u=urlparse(location)
-  if u.hostname not in ('webcourses.ucf.edu','www.cs.ucf.edu','cs.ucf.edu','feprep.net','calendar.google.com') or u.username or u.password:raise ValueError('Source URL outside approved school reference hosts')
+  if u.hostname not in ({__import__('school_hq_connections').canvas_host()}|set(__import__('school_hq_connections').read().get('public_resource_hosts',[])))-{''} or u.username or u.password:raise ValueError('Source URL outside approved school reference hosts')
  if location.startswith('https://') and not s.get('snapshot'):raise ValueError('Web reference needs a verified local capture')
  if '://' in snapshot:raise ValueError('Snapshot must be local')
  p=contained(snapshot,root)
@@ -202,7 +202,7 @@ def update_event(state,new,root=ROOT):
 
 def assess(state,review,evidence,day):
  # This records a reviewed attempt; it never autonomously grades a photograph.
- if day>datetime.now(ZoneInfo('America/New_York')).date():raise ValueError('Future attempts cannot be recorded')
+ if day>datetime.now(__import__('school_hq_connections').zone()).date():raise ValueError('Future attempts cannot be recorded')
  ident=text(review,'submission_id')
  if evidence.get('id')!=ident or not (evidence.get('answer','').strip() or evidence.get('attachment')):raise ValueError('Actual answer evidence required')
  if evidence.get('assessment_allowed') is not True:raise ValueError('Practice-only consent/scope required')
@@ -292,14 +292,14 @@ def dashboard(state,day,root=ROOT):
 
 def persist(state,root=ROOT):
  atomic(root/'School HQ Study/coaching-state.json',state)
- atomic(root/'School HQ App/Bridge/learning.json',dashboard(state,datetime.now(ZoneInfo('America/New_York')).date(),root))
+ atomic(root/'School HQ App/Bridge/learning.json',dashboard(state,datetime.now(__import__('school_hq_connections').zone()).date(),root))
 def main():
  p=argparse.ArgumentParser();p.add_argument('action',choices=['initialize','context','validate','review','event','register']);p.add_argument('--file');args=p.parse_args()
  root=ROOT;lock=root/'School HQ Study/.coaching.lock';lock.parent.mkdir(parents=True,exist_ok=True)
  with lock.open('a') as held:
   fcntl.flock(held,fcntl.LOCK_EX);state=load(root)
   if args.action=='initialize':persist(state);print('Learning state initialized; legacy progress preserved')
-  elif args.action=='context':print(json.dumps(dashboard(state,datetime.now(ZoneInfo('America/New_York')).date()),indent=2))
+  elif args.action=='context':print(json.dumps(dashboard(state,datetime.now(__import__('school_hq_connections').zone()).date()),indent=2))
   elif args.action=='validate':
    packet=json.loads(contained(args.file,root/'School HQ Study').read_text());tasks,rubrics=validate_packet(packet,root,state);print(json.dumps({'valid':True,'tasks':len(tasks),'hidden_rubrics':len(rubrics)}))
   elif args.action=='register':

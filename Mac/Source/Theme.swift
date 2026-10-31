@@ -77,15 +77,10 @@ enum Theme {
     static let glassTint = Color(light: 0xFFFFFF, lightAlpha: 0.55, dark: 0xFFFFFF, darkAlpha: 0.12)
     static var prism: LinearGradient { LinearGradient(colors: prismColors, startPoint: .leading, endPoint: .trailing) }
 
+    /// Your own names for your classes (from setup).
+    nonisolated(unsafe) static var courseLabels: [String: String] = [:]
     static func courseLabel(_ id: String) -> String {
-        switch id {
-        case "COP3330": return "Java"
-        case "COP3502C": return "CS1"
-        case "MAC2311C": return "Calculus"
-        case "COT3100C": return "Discrete"
-        case "CIS3360": return "Security"
-        default: return id
-        }
+        courseLabels[id] ?? id
     }
 }
 

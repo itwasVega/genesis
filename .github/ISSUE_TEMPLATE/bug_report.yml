@@ -28,7 +28,7 @@ body:
     attributes:
       label: Genesis build
       description: Genesis › About Genesis
-      placeholder: 1.0 (49)
+      placeholder: 1.0 (50)
     validations:
       required: true
   - type: input
@@ -45,8 +45,7 @@ body:
       options:
         - label: Canvas
         - label: Calendar
-        - label: Email
-        - label: Professor websites
+        - label: School email
   - type: textarea
     id: extra
     attributes:

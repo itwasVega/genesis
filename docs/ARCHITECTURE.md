@@ -17,7 +17,7 @@ Genesis is two programs that share a folder: a native SwiftUI app and a Python b
 
 ## The daily loop
 
-1. **Collect.** With the Canvas plugin, `LocalCanvas.swift` reads each class's pages read-only through the student's own session. `school_hq_local_worker.py` runs the optional plugins (calendar, email, professor sites) only when they're on.
+1. **Collect.** With the Canvas plugin, `LocalCanvas.swift` and `CanvasStructured.js` read each class read-only from the school's Canvas, through the student's own signed-in session or an access token they made. `school_hq_local_worker.py` runs the optional plugins (calendar, email) only when they're on.
 2. **Catalog.** `school_hq_catalog.py` reads practice files once and lists each problem with its page (`school_hq_pdf.py` calls the native `GenesisPDF` helper).
 3. **Plan.** `school_hq_engine.py` and `school_hq_planning.py` find what's due, what each assessment covers, and which topics aren't mastered (`new → practiced → independent → retained`). `paced_quota` spreads topics across the days left so nothing lands the night before.
 4. **Generate and verify.** Problems are written in the professor's format, then solved independently by a separate session against a private rubric (`school_hq_verification.py`).
@@ -26,6 +26,10 @@ Genesis is two programs that share a folder: a native SwiftUI app and a Python b
 ## Notes
 
 `school_hq_context.py` turns notes into labeled chips (missed class, a reported date, scope, struggling). Rapid-fire messages from the phone arrive as a session and are combined using context before they change the plan.
+
+## First launch
+
+`Setup.swift` is the black-window welcome and the guided setup. The same steps open when a plugin is added later, so nothing needs a trip into Settings. Classes come from the Canvas API (`findCourses`), and the calendar feed from the student's Canvas profile.
 
 ## The companion
 

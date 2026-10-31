@@ -52,15 +52,15 @@ def blocks(text,course=''):
         if match:
             before=prose[:match.start(1)].strip();after=prose[match.end(1):].strip()
             if before:out.append({'kind':'paragraph','text':before})
-            out.append({'kind':'code','text':match[1],'language':'java' if course=='COP3330' else 'c'})
+            out.append({'kind':'code','text':match[1],'language':__import__('school_hq_connections').language(course) or ('java' if 'Java:' in prose else 'c')})
             prose=after
         for p in re.split(r'\n\s*\n',prose):
             p=p.strip()
             if not p:continue
             if re.match(r'^(?:int|void|class|public class)\s',p) and '\n' in p:
                 first,rest=p.split('\n',1)
-                out.append({'kind':'code','text':first,'language':'java' if course=='COP3330' else 'c'});p=rest
-            if course=='MAC2311C':
+                out.append({'kind':'code','text':first,'language':__import__('school_hq_connections').language(course) or ('java' if p.startswith(('class','public class')) else 'c')});p=rest
+            if __import__('school_hq_connections').subject(course)=='math':
                 out.extend(math_blocks(p))
                 continue
             out.append({'kind':'paragraph','text':p})

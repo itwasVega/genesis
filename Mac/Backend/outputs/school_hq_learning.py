@@ -18,7 +18,7 @@ BANK=ROOT/'School HQ Study/lesson-bank.json'
 CHECKS={'number','sequence','tokens','polynomial','choice','multi_select','review'}
 
 def clock(): return datetime.now(timezone.utc)
-def school_day(when): return when.astimezone(ZoneInfo('America/New_York')).date()
+def school_day(when): return when.astimezone(__import__('school_hq_connections').zone()).date()
 def canonical(value): return hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest()
 
 def polynomial(value):

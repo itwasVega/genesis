@@ -481,6 +481,7 @@ final class Companion: ObservableObject {
         thinking = true
         let history = chat.map { ["who": $0.who, "text": $0.text] }
         var payload: [String: Any] = ["history": history, "moment": moment]
+        if let name = UserDefaults.standard.string(forKey: "userName"), !name.isEmpty { payload["name"] = name }
         if let t = model.openTask { payload["task"] = ["title": t.title.replacingOccurrences(of: "`", with: ""), "course": t.courseID] }
         let pulse = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: true) { [weak self] _ in Task { @MainActor in self?.pressID += 1 } }
         model.runScript("school_hq_companion.py", ["chat"], stdin: try? JSONSerialization.data(withJSONObject: payload)) { [weak self] data in

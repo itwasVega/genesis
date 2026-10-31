@@ -18,7 +18,7 @@ FEEDBACK=BRIDGE/'Feedback'
 RETRIES=STUDY/'retries.json'
 
 def now():return datetime.now(timezone.utc).isoformat()
-def day():return datetime.now(ZoneInfo('America/New_York')).date()
+def day():return datetime.now(__import__('school_hq_connections').zone()).date()
 def read(p,default=None):
  try:return json.loads(Path(p).read_text())
  except (OSError,ValueError):return {} if default is None else default
@@ -107,11 +107,11 @@ CLEARER={
  'mixed':["Part a: gcd = 7","Part b: 7 = 3·91 - 10·27"],
 }
 CLEARER.update({
- ('COT3100C','derivation'):["42 = 1·30 + 12","30 = 2·12 + 6","12 = 2·6 + 0  →  gcd = 6, 3 divisions","6 = 42 - 1·30 ... so 6 = 42·(-2) + 30·3"],
- ('COT3100C','proof'):["1. Suppose n is odd, so n = 2k + 1   (definition)","2. n^2 = 4k^2 + 4k + 1 = 2(2k^2 + 2k) + 1   (algebra)","3. So n^2 is odd   (definition)"],
- ('COT3100C','short_answer'):["gcd = 6, x = -2, y = 3","{1, 2, 3}"],
- ('MAC2311C','derivation'):["f'(x) = 3x^2 - 4x","lim x->0 sin(3x)/x = 3","(x + 1)/(x - 1)   not   x + 1/x - 1"],
- ('COP3502C','derivation'):["T(n) = 2T(n/2) + n","= 4T(n/4) + 2n","= n log2(n) + n"],
+ ('discrete','derivation'):["42 = 1·30 + 12","30 = 2·12 + 6","12 = 2·6 + 0  →  gcd = 6, 3 divisions","6 = 42 - 1·30 ... so 6 = 42·(-2) + 30·3"],
+ ('discrete','proof'):["1. Suppose n is odd, so n = 2k + 1   (definition)","2. n^2 = 4k^2 + 4k + 1 = 2(2k^2 + 2k) + 1   (algebra)","3. So n^2 is odd   (definition)"],
+ ('discrete','short_answer'):["gcd = 6, x = -2, y = 3","{1, 2, 3}"],
+ ('math','derivation'):["f'(x) = 3x^2 - 4x","lim x->0 sin(3x)/x = 3","(x + 1)/(x - 1)   not   x + 1/x - 1"],
+ ('cs','derivation'):["T(n) = 2T(n/2) + n","= 4T(n/4) + 2n","= n log2(n) + n"],
 })
 
 def leaks(lines,private):
@@ -186,7 +186,7 @@ def submit(payload,client_factory=None):
   example=result.get('clear_example')
   if isinstance(example,str):example=[x for x in example.splitlines() if x.strip()]
   if not (isinstance(example,list) and example and all(isinstance(x,str) for x in example)) or leaks(example,private):
-   example=CLEARER.get((course,kind)) or CLEARER.get(kind,CLEARER['short_answer'])
+   example=CLEARER.get((__import__('school_hq_connections').subject(course),kind)) or CLEARER.get(kind,CLEARER['short_answer'])
   return {'unreadable':{'reason':result.get('unreadable_reason') or result['feedback'],'tips':tips[:4],'examples':[x[:120] for x in example[:5]]}}
  retry_public=None;remark=None
  with (STUDY/'.coaching.lock').open('a') as lock:

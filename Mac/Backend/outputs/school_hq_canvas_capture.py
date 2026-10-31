@@ -13,7 +13,8 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT / 'Canvas School Source'
-from school_hq_connections import courses
+from school_hq_connections import courses, canvas_host
+HOST = canvas_host()
 COURSES = courses()
 EXCLUDED_COURSES = set()
 
@@ -42,7 +43,7 @@ def page_body(course, kind, ax):
     if not url.startswith('http'): url = 'https://'+url
     parsed = urlparse(url)
     prefix = '/courses/'+COURSES[course]+'/'
-    if parsed.hostname != 'webcourses.ucf.edu' or not parsed.path.startswith(prefix):
+    if parsed.hostname != HOST or not parsed.path.startswith(prefix):
         raise ValueError('Wrong course or domain; preserve previous snapshot')
     section = 'assignments' if kind=='detail' else kind
     if not parsed.path[len(prefix):].startswith(section): raise ValueError('Wrong Canvas section')
@@ -140,7 +141,7 @@ def capture(payload):
         dom=payload['dom'];url=payload['url'];u=urlparse(url)
         prefix='/courses/'+COURSES[course]+'/'
         section='assignments' if kind=='detail' else kind
-        if u.hostname!='webcourses.ucf.edu' or not u.path.startswith(prefix+section):raise ValueError('Wrong visible course URL')
+        if u.hostname!=HOST or not u.path.startswith(prefix+section):raise ValueError('Wrong visible course URL')
         body=dom['body']
         if not body.strip() or 'Loading data' in body:raise ValueError('Page is incomplete')
         parsed=dom.get('grades') if kind=='grades' else None
@@ -183,7 +184,7 @@ def audit(ident):
         'grade_rows':sum(len(r['parsed']['assignments']) for r in records if r['parsed'])}
 
 def normalized_date(value, captured):
-    day=datetime.fromisoformat(captured.replace('Z','+00:00')).astimezone(ZoneInfo('America/New_York')).date()
+    day=datetime.fromisoformat(captured.replace('Z','+00:00')).astimezone(__import__('school_hq_connections').zone()).date()
     if value in ('Today','Yesterday'):return (day-timedelta(days=value=='Yesterday')).isoformat()
     weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
     if value in weekdays:return (day-timedelta(days=(day.weekday()-weekdays.index(value))%7 or 7)).isoformat()
@@ -219,8 +220,8 @@ def plan(ident):
     links=[]
     for r in records:
         if r['kind']!='assignments':continue
-        found=re.findall(r'link (.*?), Value: (webcourses\.ucf\.edu/courses/\d+/assignments/\d+)',r['body'])
-        found += [(x['name'],'webcourses.ucf.edu'+x['source'] if x['source'].startswith('/') else x['source']) for x in r.get('links',[]) if '/assignments/' in x.get('source','')]
+        found=re.findall(r'link (.*?), Value: ('+re.escape(HOST)+r'/courses/\d+/assignments/\d+)',r['body'])
+        found += [(x['name'],HOST+x['source'] if x['source'].startswith('/') else x['source']) for x in r.get('links',[]) if '/assignments/' in x.get('source','')]
         for name,url in found:
             if re.search(r'\bquiz|\bexam|\bfinal|\bmid.?term',name,re.I):continue
             url=url if url.startswith('https://') else 'https://'+url
@@ -313,8 +314,8 @@ def commit(ident):
     jsonwrite(SOURCE/'assignment-details.json',details)
     for c in COURSES:
         listing=next(r for r in records if r['course']==c and r['kind']=='assignments')
-        links=re.findall(r'link (.*?), Value: (webcourses\.ucf\.edu/courses/\d+/assignments/\d+)',listing['body'])
-        links += [(x['name'],'webcourses.ucf.edu'+x['source'] if x['source'].startswith('/') else x['source']) for x in listing.get('links',[]) if '/assignments/' in x.get('source','')]
+        links=re.findall(r'link (.*?), Value: ('+re.escape(HOST)+r'/courses/\d+/assignments/\d+)',listing['body'])
+        links += [(x['name'],HOST+x['source'] if x['source'].startswith('/') else x['source']) for x in listing.get('links',[]) if '/assignments/' in x.get('source','')]
         missing=[name for name,url in links if ('https://'+url if not url.startswith('https://') else url) not in details and not re.search(r'\bquiz|\bexam|\bfinal|\bmid.?term',name,re.I)]
         coverage=['Captured UTC: '+listing['captured_utc'],'Current grades and assignment listing checked. Accessible file-folder pagination audited.','Descriptions not yet captured: '+str(len(missing)),*missing,'External Hawkes/Gradescope bodies, hidden/unposted grades, locked files, complete assignment-only attachments and email attachments remain incomplete.']
         atomic(SOURCE/(c+' - collection coverage.txt'),'\n'.join(coverage)+'\n')

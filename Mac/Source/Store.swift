@@ -301,13 +301,25 @@ final class AppModel: ObservableObject {
     @Published var canvasSignIn = false
     /// Plugins you've added (Settings › Plugins). Anything not here never runs or appears.
     @Published var plugins: Set<String> = []
-    @Published var choosingPlugins = false
+    /// The first time Genesis opens: the black window where you meet her, and set everything up.
+    @Published var welcoming = false
+    /// A plugin you just added: its setup opens right there.
+    @Published var setupPlugin: PluginSetupID?
+    /// While a setup step shows the Canvas sign-in, the window's hidden collector steps aside.
+    @Published var canvasEmbedded = false
 
     func loadPlugins() {
         guard !workspace.isEmpty, let c = try? GenesisConfiguration.load(root: workspace) else { return }
         let on = Set(GenesisPlugin.catalog.map(\.id).filter { c.on($0) })
         if on != plugins { plugins = on }
-        if !c.plugins_chosen && !choosingPlugins && ProcessInfo.processInfo.environment["GENESIS_TEST_WORKSPACE"] == nil { choosingPlugins = true }
+        Theme.courseLabels = Dictionary(c.courses.map { ($0.id, $0.label) }, uniquingKeysWith: { a, _ in a })
+        if !c.canvas_host.isEmpty { UserDefaults.standard.set(c.canvas_host, forKey: "canvasHost") }
+        if !c.welcomed && !welcoming && ProcessInfo.processInfo.environment["GENESIS_TEST_WORKSPACE"] == nil { welcoming = true }
+    }
+
+    /// Adding a plugin goes straight into its setup; one with nothing to set up just turns on.
+    func addPlugin(_ id: String) {
+        if ["canvas", "email", "calendar"].contains(id) { setupPlugin = PluginSetupID(id: id) } else { setPlugin(id, true) }
     }
 
     func setPlugin(_ id: String, _ on: Bool) {
@@ -318,14 +330,6 @@ final class AppModel: ObservableObject {
         if on { plugins.insert(id) } else { plugins.remove(id) }
     }
 
-    func finishPluginChoice() {
-        var c = (try? GenesisConfiguration.load(root: workspace)) ?? GenesisConfiguration()
-        c.plugins_chosen = true
-        try? c.save(root: workspace)
-        choosingPlugins = false
-        // Canvas needs your classes before it can build a plan.
-        if plugins.contains("canvas") && c.courses.isEmpty { message = "Add your classes in Settings › Accounts, then sync." }
-    }
     @Published var searchHits: [SearchHit] = []
     @Published var appearance: String = UserDefaults.standard.string(forKey: "appearance") ?? "dark"
 
@@ -784,3 +788,5 @@ func dayLabel(_ isoDay: String, days: Int) -> String {
     let out = DateFormatter(); out.dateFormat = days < 7 ? "EEEE" : "MMM d"
     return out.string(from: d)
 }
+
+struct PluginSetupID: Identifiable, Hashable { var id: String }

@@ -12,7 +12,7 @@ ACTIVE_POLICY_ID='local-first-v4'
 ACTIVE_SOURCES=['canvas']
 OPTIONAL_SOURCES=['mail']
 POLICY_SOURCES={'local-first-v4':['canvas'],'local-first-v3':['canvas','gmail'],'local-first-v2':['canvas','email'],'local-first-v1':['canvas','email','remarkable']}
-SOURCE_LABELS={'canvas':'Canvas','mail':'Email','gmail':'Gmail','email':'UCF Mail','remarkable':'reMarkable'}
+SOURCE_LABELS={'canvas':'Canvas','mail':'Email','gmail':'Gmail','email':'School email','remarkable':'reMarkable'}
 
 def required_sources(request):
  ident=request.get('policy_id') or 'local-first-v1'

@@ -23,8 +23,8 @@ def verified_grades(root):
         if hashlib.sha256(Path(row['path']).read_bytes()).hexdigest()!=row['sha256']:return {}
         book=json.loads(Path(row['path']).read_text())
         if receipt.get('schema')!=2 or receipt.get('partial') or receipt.get('error') or receipt.get('request_id')!=ident:return {}
-        captured=datetime.fromisoformat(receipt['checked_at'].replace('Z','+00:00')).astimezone(ZoneInfo('America/New_York')).date()
-        if not 0<=(datetime.now(ZoneInfo('America/New_York')).date()-captured).days<=14:return {}
+        captured=datetime.fromisoformat(receipt['checked_at'].replace('Z','+00:00')).astimezone(__import__('school_hq_connections').zone()).date()
+        if not 0<=(datetime.now(__import__('school_hq_connections').zone()).date()-captured).days<=14:return {}
         values={}
         for course,entry in book.items():
             match=re.fullmatch(r'\s*(\d+(?:\.\d+)?)%\s*',str(entry.get('total_displayed','')))
@@ -66,7 +66,7 @@ def _displayed_deadlines(root):
         receipt=json.loads((bridge/'Receipts'/(ident+'-canvas.json')).read_text())
         row=next(x for x in receipt['snapshots'] if x.get('role')=='gradebooks');data=Path(row['path']).read_bytes()
         if hashlib.sha256(data).hexdigest()!=row['sha256'] or receipt.get('partial') or receipt.get('error'):return []
-        captured=datetime.fromisoformat(receipt['checked_at'].replace('Z','+00:00')).astimezone(ZoneInfo('America/New_York')).date();book=json.loads(data);out=[]
+        captured=datetime.fromisoformat(receipt['checked_at'].replace('Z','+00:00')).astimezone(__import__('school_hq_connections').zone()).date();book=json.loads(data);out=[]
         for course,entry in book.items():
             for item in entry.get('assignments',[]):
                 if item.get('submitted'):continue
@@ -95,7 +95,7 @@ def listed_deadlines(root):
         if receipt.get('schema')!=2 or receipt.get('request_id')!=ident or receipt.get('partial') or receipt.get('error'):return []
         captured=datetime.fromisoformat(receipt['checked_at'].replace('Z','+00:00'))
         if captured.tzinfo is None or captured>datetime.now(timezone.utc):return []
-        zone=ZoneInfo('America/New_York');day=captured.astimezone(zone).date()
+        zone=__import__('school_hq_connections').zone();day=captured.astimezone(zone).date()
         rows=[];structured=set();seen=set()
         for source in receipt.get('snapshots',[]):
             if not source.get('role','').endswith((':assignments',':detail')):continue
@@ -128,7 +128,7 @@ def listed_deadlines(root):
                 local=due.astimezone(zone)
                 if (local.date()-day).days>90:continue
                 rows.append({'course':course,'assignment_id':str(item['id']),'date':local.date().isoformat(),
-                    'due_at':due.isoformat(),'timezone':'America/New_York','name':item.get('name','Untitled assignment'),
+                    'due_at':due.isoformat(),'timezone':__import__('school_hq_connections').zone_name(),'name':item.get('name','Untitled assignment'),
                     'certainty':'listed','quoted_due':local.strftime('%b %d, %Y at %I:%M %p %Z'),
                     'due_is_exact':True,'scope_verified':False,'url':item.get('html_url'),
                     'source_hash':source['sha256'],'source_path':str(path),'captured_at':captured.isoformat(),

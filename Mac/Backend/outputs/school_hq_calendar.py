@@ -18,18 +18,19 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
  def redirect_request(self,*args,**kwargs):raise ValueError('Calendar redirected. Update the feed in Settings.')
 def allowed_url(value):
  u=urlsplit(value)
- return u.scheme=='https' and u.hostname=='webcourses.ucf.edu' and not u.username and not u.password and u.port in (None,443) and u.path.endswith('.ics') and not u.fragment
+ return u.scheme=='https' and u.hostname==__import__('school_hq_connections').canvas_host() and not u.username and not u.password and u.port in (None,443) and u.path.endswith('.ics') and not u.fragment
 
 def moment(value):
- if isinstance(value,datetime):return value if value.tzinfo else value.replace(tzinfo=ZoneInfo('America/New_York'))
- if isinstance(value,date):return datetime.combine(value,time(),ZoneInfo('America/New_York'))
+ if isinstance(value,datetime):return value if value.tzinfo else value.replace(tzinfo=__import__('school_hq_connections').zone())
+ if isinstance(value,date):return datetime.combine(value,time(),__import__('school_hq_connections').zone())
  raise ValueError('Calendar event has no valid date')
 def event_record(e,when,original):
  end=e.decoded('DTEND',None);start=e.decoded('DTSTART',None)
  duration=moment(end)-moment(start) if end and start else e.decoded('DURATION',timedelta(days=1) if isinstance(start,date) and not isinstance(start,datetime) else timedelta(0))
  if duration<timedelta(0):raise ValueError('Calendar event ends before it starts')
  summary=str(e.get('SUMMARY','Untitled event'))[:1000];url=str(e.get('URL','')).split('?')[0].split('#')[0]
- if url and not (url.startswith('https://webcourses.ucf.edu/') or url.startswith('https://www.cs.ucf.edu/')):url=''
+ origin=__import__('school_hq_connections').canvas_origin()
+ if url and not (origin and url.startswith(origin+'/')):url=''
  return {'uid':str(e['UID']),'occurrence':when.isoformat(),'summary':summary,'start':when.isoformat(),'end':(when+duration).isoformat(),'all_day':not isinstance(start,datetime),'original_start':original.isoformat(),'source_timezone':str(getattr(start,'tzinfo','DATE')),'status':str(e.get('STATUS','CONFIRMED')),'last_modified':str(e.get('LAST-MODIFIED','')),'url':url,'course':next((c for c in ('COP3502C','COP3330','MAC2311C','COT3100C','CIS3360') if c in summary.replace(' ','')),None)}
 
 def parse(data,now=None):

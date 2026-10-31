@@ -14,9 +14,9 @@ def setup():
  for f in SRC.glob('*.py'):shutil.copy(f,root/f.name)
  for f in SRC.glob('*.json'):shutil.copy(f,root/f.name)
  (root/'School HQ App/Bridge').mkdir(parents=True);(root/'School HQ Study').mkdir(parents=True)
- (root/'School HQ Study/connections.json').write_text(json.dumps({'courses':[{'id':i,'canvas_id':c,'label':l} for i,c,l in [('COP3330','1000004','Java'),('COP3502C','1000001','CS1'),('COT3100C','1000002','Discrete'),('MAC2311C','1000003','Calculus')]]}))
+ (root/'School HQ Study/connections.json').write_text(json.dumps({'canvas_host':'canvas.example.edu','courses':[{'id':i,'canvas_id':c,'label':l} for i,c,l in [('COP3330','1000004','Java'),('COP3502C','1000001','CS1'),('COT3100C','1000002','Discrete'),('MAC2311C','1000003','Calculus')]]}))
  shutil.copy(STAGED/'School HQ Study/coaching-state.json',root/'School HQ Study/coaching-state.json')
- shutil.copy(HERE.parent/'Mac/Source/lesson-bank.json',root/'School HQ Study/lesson-bank.json')
+ shutil.copy(HERE/'fixtures/lesson-bank.json',root/'School HQ Study/lesson-bank.json')
  (root/'School HQ Study/assessments.json').write_text(json.dumps({'schema':1,'assessments':[{'id':'COP3502C:lab-exam','course':'COP3502C','name':'Week 10 lab exam','date':None,'certainty':'unknown','status':'scheduled','sources':[],'objectives':[{'id':'dma','title':'Dynamic memory allocation','formats':['write code']},{'id':'ll','title':'Linked lists','formats':['write code']},{'id':'rec','title':'Recursion','formats':['trace']},{'id':'stk','title':'Stacks and queues','formats':['write code']}]}]}))
  mat=root/'School HQ App/Bridge/Runs/r1/material';mat.mkdir(parents=True)
  docs=[('COP3502C','CS1 Midterm Sample.pdf',['B. Recursion question 2: Write a recursive function byeList that frees every node of a linked list. void byeList(node* head)','Q3 Trace the following pointer code and give the output of each printf.']),
@@ -28,7 +28,7 @@ def setup():
   p=mat/title;data=b'%PDF-1.4 fixture '+title.encode();p.write_bytes(data)
   (root/'School HQ Study/Catalog/text').mkdir(parents=True,exist_ok=True)
   (root/'School HQ Study/Catalog/text'/(sha(data)+'.json')).write_text(json.dumps({'sha256':sha(data),'pages':pages}))
-  assets.append({'id':course+':'+str(p),'path':str(p),'title':title,'kind':'Course material','course':course,'sha256':sha(data),'source_url':'https://webcourses.ucf.edu/courses/1/files/1','verification_state':'verified_bytes_not_learning_coverage'})
+  assets.append({'id':course+':'+str(p),'path':str(p),'title':title,'kind':'Course material','course':course,'sha256':sha(data),'source_url':'https://canvas.example.edu/courses/1/files/1','verification_state':'verified_bytes_not_learning_coverage'})
  (root/'School HQ App/Bridge/library.json').write_text(json.dumps({'courses':[{'id':c} for c in ('COP3330','COP3502C','MAC2311C','COT3100C','CIS3360')],'assets':assets}))
  (root/'School HQ App/Bridge/state.json').write_text(json.dumps({'schema':1,'request':{'id':'req-1','status':'processing','manual':True,'requested_at':datetime.now(timezone.utc).isoformat(),'policy_id':'local-first-v3'},'sources':{},'events':[],'brief':None}))
  return root

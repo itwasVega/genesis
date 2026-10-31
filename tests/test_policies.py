@@ -318,6 +318,20 @@ r=K.chat({'history':[{'who':'genesis','text':'x'},{'who':'you','text':'i wanted 
 check('later replies may ask, when it follows from what they said',r['reply'].endswith('?') and len(Asker.seen)==1)
 K.forget('all')
 
+# ---------- any school: nothing tied to one school's Canvas, email or time zone ----------
+import school_hq_connections as CN
+_cf=root/'School HQ Study/connections.json';_saved=_cf.read_text()
+_v=json.loads(_saved);_v['canvas_host']='canvas.state.edu';_v['school_email']='me@student.state.edu';_v['timezone']='America/Denver';_cf.write_text(json.dumps(_v))
+check('Canvas host comes from setup',CN.canvas_host()=='canvas.state.edu' and CN.canvas_origin()=='https://canvas.state.edu')
+check('school email domain comes from the student',CN.school_domain()=='student.state.edu')
+check('time zone comes from setup',CN.zone_name()=='America/Denver')
+_v.pop('school_email');_v['canvas_host']='bigu.instructure.com';_cf.write_text(json.dumps(_v))
+check('no guessed domain on a shared instructure host',CN.school_domain()=='')
+check('subjects and languages come from class names',CN.subject('MAC2311C')=='math' and CN.subject('COT3100C')=='discrete' and CN.language('COP3330')=='java')
+_al=dict(CN.aliases())
+check('notes find classes by code (any spacing), name and everyday words',re.search(_al['COP3502C'],'cop 3502 quiz',re.I) and re.search(_al['MAC2311C'],'calc test moved',re.I) and re.search(_al['COP3330'],'java exam',re.I))
+_cf.write_text(_saved)
+
 print('passed',passed[0],'failed',len(fails))
 for f in fails:print('FAIL',f)
 sys.exit(1 if fails else 0)

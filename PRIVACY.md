@@ -27,7 +27,7 @@ In the macOS Keychain: your email app password and private calendar link, if you
 
 | When | What | Where |
 | --- | --- | --- |
-| Canvas plugin syncs | Requests to read your classes, using your own signed-in session | Your school's Canvas site |
+| Canvas plugin syncs | Read-only requests for your classes, using your own sign-in or the access token you made (kept in your Keychain) | Your school's Canvas site |
 | Genesis writes, checks or grades practice, labels a note, or the companion talks | The course material and text needed for that one job | OpenAI, through your Codex session |
 | Email plugin | Read-only mailbox requests | Your email provider |
 | Calendar plugin | A request for your private calendar feed | Your school's Canvas site |

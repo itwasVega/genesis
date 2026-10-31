@@ -24,9 +24,9 @@ from zoneinfo import ZoneInfo
 ROOT=Path(__file__).resolve().parent
 BRIDGE=ROOT/'School HQ App/Bridge'
 STUDY=ROOT/'School HQ Study'
-SHORT={'COP3330':'Java','COP3502C':'CS1','MAC2311C':'Calculus','COT3100C':'Discrete'}
+SHORT=__import__('school_hq_connections').labels()
 
-def today():return datetime.now(ZoneInfo('America/New_York')).date()
+def today():return datetime.now(__import__('school_hq_connections').zone()).date()
 def read(p,default=None):
  try:return json.loads(Path(p).read_text())
  except (OSError,ValueError):return {} if default is None else default
@@ -189,7 +189,7 @@ def sessions(evs,idle_minutes=5):
  def close(at):
   nonlocal cur
   if cur and (at-cur['start']).total_seconds()>=60:
-   out.append({'start':cur['start'],'end':at,'minutes':(at-cur['start']).total_seconds()/60,'hour':cur['start'].astimezone(ZoneInfo('America/New_York')).hour})
+   out.append({'start':cur['start'],'end':at,'minutes':(at-cur['start']).total_seconds()/60,'hour':cur['start'].astimezone(__import__('school_hq_connections').zone()).hour})
   cur=None
  for e in sorted(evs,key=lambda e:e['t']):
   at=t(e)
@@ -278,6 +278,7 @@ def chat_prompt(payload,mem,st):
   'or family problems unless they bring it up, and then follow their lead. '  'Sometimes, if it fits, nudge them toward people in their life. '
   'They decide how long this goes. Only when they sound ready to stop (or say they need to go), let them go in one easy line'+back+' and set "wrap": true. Never end it yourself just because a few messages passed.\n'
   'Their writing: '+how+'. Recent things they wrote (register only, do not copy phrases): '+json.dumps(st['samples'])+'\n'
+  +('Their name is '+str(payload.get('name'))[:40]+' (use it now and then, the way a friend would, never in every message).\n' if payload.get('name') else '')+
   'Relationship so far ('+stage+'). What they have told you:\n'+facts+'\n'
   'Things they do not want to talk about (never bring these up):\n'+limits+'\n\n'
   'EXAMPLES OF YOUR VOICE (invented scenes; never reuse them word for word):\n'+examples_block()+'\n\n'

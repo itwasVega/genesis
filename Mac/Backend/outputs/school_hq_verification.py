@@ -65,7 +65,7 @@ def validate_local(receipt,request,source,root,current=None):
         raise ValueError('Legacy Gmail collection is not enabled in this release. Configure Email in Settings.')
     elif source=='email':
         config=json.loads((root/'school_hq_mail_config.json').read_text());summary=payload('mail-check');index=payload('mail-index')
-        if summary.get('request_id')!=request['id'] or summary.get('configured_recipient')!=config.get('address') or summary.get('mailbox')!=config.get('inbox'):raise ValueError('Mailbox identity/request does not match configured UCF source')
+        if summary.get('request_id')!=request['id'] or summary.get('configured_recipient')!=config.get('address') or summary.get('mailbox')!=config.get('inbox'):raise ValueError('Mailbox identity/request does not match configured school email')
         observed(summary.get('checked_at'));counts=summary.get('counts',{})
         if type(counts.get('cached_files_checked')) is not int or counts['cached_files_checked']<=0 or counts.get('incomplete_or_unsupported_pending')!=0:raise ValueError('Mailbox check was empty or incomplete')
         if not isinstance(index,dict) or not index or summary.get('state_sha256')!=digest(by_role['mail-index'][0]):raise ValueError('Mailbox index evidence is absent or inconsistent')
@@ -77,7 +77,7 @@ def validate_local(receipt,request,source,root,current=None):
         for course,cid in course_ids.items():
             for kind in ('grades','assignments','files','announcements'):
                 row=payload(course+':'+kind);u=urlparse(row.get('url',''))
-                if row.get('course')!=course or row.get('kind')!=kind or u.hostname!='webcourses.ucf.edu' or not u.path.startswith('/courses/'+cid+'/') or not row.get('body','').strip() or row.get('authenticated') is not True:raise ValueError('Canvas page identity/access evidence invalid')
+                if row.get('course')!=course or row.get('kind')!=kind or u.hostname!=__import__('school_hq_connections').canvas_host() or not u.path.startswith('/courses/'+cid+'/') or not row.get('body','').strip() or row.get('authenticated') is not True:raise ValueError('Canvas page identity/access evidence invalid')
                 observed(row.get('captured_utc'))
                 if not loaded_list(row,kind):raise ValueError('Canvas '+kind+' capture is a loading shell, not a loaded list')
                 if kind=='grades':

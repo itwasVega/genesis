@@ -394,7 +394,6 @@ struct EmptyPlan: View {
     var showSync: Bool
     var body: some View {
         HStack(spacing: 22) {
-            DrawOn(shape: SketchPencil(), color: Theme.tertiary, lineWidth: 1.2, duration: 1.1).frame(width: 40, height: 40)
             VStack(alignment: .leading, spacing: 6) {
                 Text(title).font(Typeface.headline(18)).lineLimit(1).minimumScaleFactor(0.85)
                 Text(detail).font(Typeface.sans(13.5)).foregroundStyle(Theme.secondary)

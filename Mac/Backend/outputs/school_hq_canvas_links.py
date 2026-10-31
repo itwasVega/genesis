@@ -13,7 +13,7 @@ class Reader(HTMLParser):
   if t in ('script','style','noscript'):self.skip=max(0,self.skip-1)
  def handle_data(self,d):
   if not self.skip and d.strip():self.parts.append(d.strip())
-ALLOW={'www.cs.ucf.edu','feprep.net','passthefoundationexam.vercel.app','algovisionknights-v2.web.app'}
+ALLOW=set(__import__('school_hq_connections').read().get('public_resource_hosts',[]))   # public course sites the student added
 class SafeRedirect(urllib.request.HTTPRedirectHandler):
  def redirect_request(self,req,fp,code,msg,h,new):
   u=urllib.parse.urlparse(new)

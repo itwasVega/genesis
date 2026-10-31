@@ -18,7 +18,7 @@
 
 ---
 
-> **Beta.** Genesis is being tested by a small group of students. Canvas support currently covers **UCF Webcourses**. Expect rough edges, and please [report what you find](../../issues/new/choose).
+> **Beta.** Genesis is being tested by a small group of students. It works with any school that uses Canvas. Expect rough edges, and please [report what you find](../../issues/new/choose).
 
 ## What it does
 
@@ -35,20 +35,17 @@ Plugins are the places Genesis gathers what it needs to build your brief: assign
 
 | Plugin | What it adds |
 | --- | --- |
-| **Canvas** | Builds your plan from your classes: assignments, announcements, files and grades, read-only, through Genesis's own browser. |
-| **Calendar** | Your private Webcourses calendar feed, for dates that only show up there. |
-| **Email** | Course emails, searchable in Library (read-only). |
-| **Professor websites** | Public course pages some professors keep outside Canvas. |
+| **Canvas** | Your classes, assignments, announcements, files and grades from any school's Canvas. Sign in like you always do, or use an access token if your school allows one. Your classes are found for you. Read-only. |
+| **Calendar** | Your private Canvas calendar feed, picked up for you, for due dates that only live on the calendar. |
+| **School email** | What professors only send by email, from Canvas and your school. Read-only. |
 
 ## Getting started
 
-**Requirements:** a Mac with Apple silicon, macOS 15 or later, and your own [Codex](https://github.com/openai/codex) installation signed in to your OpenAI account. Genesis uses your account for its AI work; it doesn't bundle any model or credentials.
+**You need:** a Mac with Apple silicon and macOS 15 or later, and the free [ChatGPT app for Mac](https://openai.com/chatgpt/download/), signed in. Genesis thinks with your own ChatGPT account; it doesn't bundle any model or credentials.
 
-1. Download **Genesis-for-Mac** from the [latest release](../../releases/latest), unzip it, and drag **Genesis** to Applications. The app is signed and notarized by Apple.
-2. On first launch, add the plugins you want.
-3. In **Settings › Models**, choose your Codex executable and click **Test connection**.
-4. If you added Canvas: in **Settings › Accounts**, add each class (its code, a name, and the number after `/courses/` in its Canvas URL), then **Sign in to Canvas**.
-5. Click **Sync**. Your first plan takes a few minutes.
+1. Download **Genesis.dmg** from the [latest release](../../releases/latest) and open it.
+2. Drag **Genesis** into **Applications**, then open it from there. It's signed and notarized by Apple.
+3. That's it. The first time you open Genesis, she introduces herself and walks you through everything, one step at a time: she finds ChatGPT on your Mac, finds your classes once you sign in to Canvas, picks up your Canvas calendar, and builds your first plan.
 
 **On iPhone:** [get the Genesis beta](docs/IPHONE.md) to send notes from class. The first note you send is all the setup there is.
 

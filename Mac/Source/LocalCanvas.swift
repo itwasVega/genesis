@@ -6,6 +6,11 @@ import PDFKit
 
 @MainActor final class LocalCanvas: NSObject,ObservableObject,WKNavigationDelegate,WKDownloadDelegate {
  @Published var message="Canvas uses its own Genesis browser profile. It does not inherit ChatGPT or Safari sign-ins."
+ /// Your school's Canvas address (any school), and how Genesis reads it: your normal sign-in
+ /// inside Genesis, or an access token if your school lets students make one.
+ var host:String{UserDefaults.standard.string(forKey:"canvasHost") ?? ""}
+ var origin:String{"https://"+host}
+ var token:String?{CanvasToken.read(host:host)}
  let web:WKWebView
  private var working=false
  private var runningID:String?
@@ -21,8 +26,8 @@ import PDFKit
  func downloadDidFinish(_ download:WKDownload){downloadFinished=true}
  func download(_ download:WKDownload,didFailWithError error:Error,resumeData:Data?){downloadError=error.localizedDescription;downloadFinished=true}
  override init(){let config=WKWebViewConfiguration();config.websiteDataStore = .default();web=WKWebView(frame:.zero,configuration:config);super.init();web.navigationDelegate=self}
- func openSignIn(){UserDefaults.standard.set(true,forKey:"localCanvasApproved");web.load(URLRequest(url:URL(string:"https://webcourses.ucf.edu/")!));message="Sign in on UCF’s official page. Cookies stay in this app’s macOS WebKit profile; Genesis does not extract them."}
- func webView(_ webView:WKWebView,didFinish navigation:WKNavigation!){if !working,webView.url?.host=="webcourses.ucf.edu"{message="Canvas page loaded. Close this panel when your course dashboard is visible, then click Sync."}}
+ func openSignIn(){guard let url=URL(string:origin+"/"),!host.isEmpty else{message="Choose your school's Canvas first.";return};UserDefaults.standard.set(true,forKey:"localCanvasApproved");web.load(URLRequest(url:url));message="Sign in on your school's own page. Your login stays in this app's private browser on this Mac; Genesis never sees your password."}
+ func webView(_ webView:WKWebView,didFinish navigation:WKNavigation!){if !working,webView.url?.host==host{message="You're in. Genesis can read your classes now."}}
  func js(_ script:String) async throws -> Any {try await withCheckedThrowingContinuation{continuation in web.evaluateJavaScript(script){result,error in if let error{continuation.resume(throwing:error)}else{continuation.resume(returning:result ?? NSNull())}}}}
  func capturedTime()->String{let f=ISO8601DateFormatter();f.formatOptions=[.withInternetDateTime,.withFractionalSeconds];return f.string(from:Date())}
  func issue(_ detail:String)->NSError{NSError(domain:"Canvas",code:1,userInfo:[NSLocalizedDescriptionKey:detail])}
@@ -33,7 +38,7 @@ import PDFKit
    try Task.checkCancellation()
    if let d=try? Data(contentsOf:URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge/state.json")),let v=try? JSONSerialization.jsonObject(with:d) as? [String:Any],let r=v["request"] as? [String:Any],r["id"] as? String != ident || r["status"] as? String != "processing"{web.stopLoading();throw issue("Sync cancelled or replaced.")}
    if !web.isLoading,let location=web.url {
-    if location.host != "webcourses.ucf.edu" || location.path.contains("/login"){try await Task.sleep(nanoseconds:250_000_000);continue}
+    if location.host != host || location.path.contains("/login"){try await Task.sleep(nanoseconds:250_000_000);continue}
     if kind=="detail",location.path != url.path{throw issue("Assignment redirected to another page; assessment content was not opened or started.")}
     if location.path==url.path {
      let probe="""
@@ -51,7 +56,7 @@ import PDFKit
    }
    try await Task.sleep(nanoseconds:250_000_000)
   }
-  if web.url?.host != "webcourses.ucf.edu" || web.url?.path.contains("/login")==true{throw issue("Canvas sign-in is required after the UCF redirect did not complete. Open Connect Canvas.")}
+  if web.url?.host != host || web.url?.path.contains("/login")==true{throw issue("Canvas needs you to sign in again. Open Settings › Plugins › Canvas.")}
   throw issue("Canvas \(kind) page did not finish loading within 28 seconds: \(url.path)")
  }
  func capture(_ url:URL,course:String,kind:String,ident:String,root:String) async throws -> [String:Any] {
@@ -70,41 +75,13 @@ import PDFKit
   guard let raw=try await js(script) as? String,let bytes=raw.data(using:.utf8),var row=try JSONSerialization.jsonObject(with:bytes) as? [String:Any]else{throw issue("Canvas returned invalid page content.")}
   row["course"]=course;row["kind"]=kind;row["captured_utc"]=capturedTime();return row
  }
- func practiceFiles(_ row:[String:Any],course:String,ident:String,root:String) async throws -> [[String:Any]] {
-  guard course=="COP3502C",let items=row["files"] as? [[String:Any]] else{return []}
-  let directory=URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge/Runs/"+ident+"/material");try FileManager.default.createDirectory(at:directory,withIntermediateDirectories:true)
-  let indexURL=URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge/canvas-material-cache.json")
-  var index=((try? Data(contentsOf:indexURL)).flatMap{try? JSONSerialization.jsonObject(with:$0) as? [String:[String:String]]}) ?? [:];var output:[[String:Any]]=[]
-  for item in items {
-   let cells=item["cells"] as? [String] ?? [];guard cells.count>=4 else{continue}
-   let candidate=cells[0].replacingOccurrences(of:"Name: ",with:"").trimmingCharacters(in:.whitespacesAndNewlines)
-   guard candidate.lowercased().hasSuffix(".pdf"),["midterm","mid term","formula","quiz2"].contains(where:{candidate.lowercased().contains($0)}) else{continue}
-   let key=course+"|"+candidate;let metadata=cells.joined(separator:"|")
-   if let prior=index[key],prior["metadata"]==metadata,let path=prior["path"],FileManager.default.fileExists(atPath:path){output.append(["course":course,"name":candidate,"path":path,"source":prior["source"] ?? "","result":"unchanged"]);continue}
-   let encoded=String(data:try JSONSerialization.data(withJSONObject:candidate,options:.fragmentsAllowed),encoding:.utf8)!
-   let click="""
-   (()=>{const target=\(encoded);const rows=[...document.querySelectorAll('main [role="row"],#content [role="row"],main tbody tr,#content tbody tr')];const r=rows.find(r=>r.innerText.includes(target));if(!r)throw Error('Visible file row changed');const cell=r.querySelector('[role="cell"],td');if(!cell)throw Error('Visible file name cell absent');cell.click();cell.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));return true;})()
-   """
-   _ = try await js(click);var linkReady=false
-   for _ in 0..<50 {if try await js("Boolean([...document.querySelectorAll('a[href]')].find(a=>a.innerText.trim()==='Download'&&a.getClientRects().length>0))") as? Bool == true{linkReady=true;break};try await Task.sleep(nanoseconds:200_000_000)}
-   guard linkReady else{throw issue("Practice PDF download link did not appear: "+candidate)}
-   let source=web.url?.absoluteString ?? "";let safe=candidate.replacingOccurrences(of:"/",with:"_");downloadTarget=directory.appendingPathComponent(safe);downloadFinished=false;downloadError=nil
-   _ = try await js("(()=>{const a=[...document.querySelectorAll('a[href]')].find(a=>a.innerText.trim()==='Download'&&a.getClientRects().length>0);if(!a)throw Error('Download link absent');a.click();return true;})()")
-   for _ in 0..<150 {if downloadFinished{break};try await Task.sleep(nanoseconds:200_000_000)}
-   guard downloadFinished,downloadError==nil,let target=downloadTarget,let bytes=try? Data(contentsOf:target),bytes.starts(with:Data("%PDF-".utf8))else{throw issue("Practice PDF download failed: "+candidate+" "+(downloadError ?? "timeout or invalid PDF"))}
-   index[key]=["metadata":metadata,"path":target.path,"source":source];output.append(["course":course,"name":candidate,"path":target.path,"source":source,"result":"downloaded"])
-   try JSONSerialization.data(withJSONObject:index,options:[.prettyPrinted,.sortedKeys]).write(to:indexURL,options:.atomic)
-   _ = try await js("(()=>{const b=[...document.querySelectorAll('button')].find(b=>(b.getAttribute('aria-label')==='Close'||b.innerText.trim()==='Close')&&b.getClientRects().length>0);if(b)b.click();return true;})()")
-  }
-  downloadTarget=nil;return output
- }
  @Published var sessionTesting=false
  @Published var sessionTestResult=""
  // Explicit diagnostic only: one known student course, one read-only GET, no cookie/token extraction.
  // This does not change source readiness or replace the independently verified page collector.
  func testSession(root:String){
   guard !working,!sessionTesting else{sessionTestResult="Wait for Canvas collection to finish before testing.";return}
-  guard UserDefaults.standard.bool(forKey:"localCanvasApproved"),web.url?.host=="webcourses.ucf.edu",web.url?.path.contains("/login") != true else{sessionTestResult="Open Connect Canvas and sign in first.";return}
+  guard UserDefaults.standard.bool(forKey:"localCanvasApproved"),web.url?.host==host,web.url?.path.contains("/login") != true else{sessionTestResult="Open Connect Canvas and sign in first.";return}
   guard let selected = try? GenesisConfiguration.load(root: root).courses.first else { sessionTestResult="Add your classes in Settings first."; return }
   sessionTesting=true;sessionTestResult="Testing one read-only assignment request…"
   Task {
@@ -113,7 +90,7 @@ import PDFKit
     let script="""
     const started=performance.now();const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);
     try{
-     if(location.origin!=='https://webcourses.ucf.edu')throw Error('Canvas origin changed');
+     if(location.origin!=='\(origin)')throw Error('Canvas origin changed');
      const path='/api/v1/courses/\(selected.canvas_id)/assignments?per_page=100';
      const response=await fetch(path,{method:'GET',credentials:'same-origin',redirect:'error',cache:'no-store',headers:{'Accept':'application/json'},signal:controller.signal});
      const type=response.headers.get('content-type')||'';
@@ -149,13 +126,21 @@ import PDFKit
    do{
     let courses = try GenesisConfiguration.load(root: root).courses.map { [$0.id, $0.canvas_id] }
     guard !courses.isEmpty else { throw issue("Add your classes and Canvas course IDs in Settings first.") }
-    guard UserDefaults.standard.bool(forKey:"localCanvasApproved")else{throw issue("Use Connect Canvas and sign in within Genesis.")}
-    // Posted grade totals and their calculation basis stay independently checked in the UI.
-    for course in courses {captures.append(try await capture(URL(string:"https://webcourses.ucf.edu/courses/\(course[1])/grades")!,course:course[0],kind:"grades",ident:ident,root:root))}
+    guard !host.isEmpty else{throw issue("Choose your school's Canvas in Settings › Plugins › Canvas.")}
+    let key=token
+    if let key,!key.isEmpty {
+     // Access token: no browser session. Stand on the school's own origin, then read the API.
+     try await openOrigin()
+     _ = key
+    } else {
+     guard UserDefaults.standard.bool(forKey:"localCanvasApproved")else{throw issue("Sign in to Canvas in Settings › Plugins › Canvas.")}
+     // Posted grade totals and their calculation basis stay independently checked in the UI.
+     for course in courses {captures.append(try await capture(URL(string:origin+"/courses/\(course[1])/grades")!,course:course[0],kind:"grades",ident:ident,root:root))}
+    }
     message="Checking every accessible assignment, announcement, folder and module…"
     let file=Bundle.main.url(forResource:"CanvasStructured",withExtension:"js")!
     let script=try String(contentsOf:file,encoding:.utf8)
-    let value=try await web.callAsyncJavaScript(script,arguments:["required":courses],in:nil,contentWorld:.page)
+    let value=try await web.callAsyncJavaScript(script,arguments:["required":courses,"expectedOrigin":origin,"token":token ?? ""],in:nil,contentWorld:.page)
     guard let raw=value as? String,let data=raw.data(using:.utf8),let result=try JSONSerialization.jsonObject(with:data) as? [String:Any],result["pagination_complete"] as? Bool==true else{throw issue("Structured Canvas collection incomplete")}
     try ensureActive(root,ident)
     captures += result["captures"] as? [[String:Any]] ?? [];diagnostics=result
@@ -173,13 +158,60 @@ import PDFKit
    message=failure ?? "Canvas structured captures saved for independent validation.";working=false
   }
  }
+ /// Token mode: load a plain page on the school's own Canvas origin (no sign-in), so API
+ /// reads are same-origin. robots.txt is public on every Canvas.
+ func openOrigin() async throws {
+  if web.url?.host==host,!web.isLoading{return}
+  web.load(URLRequest(url:URL(string:origin+"/robots.txt")!))
+  for _ in 0..<80{if !web.isLoading,web.url?.host==host{return};try await Task.sleep(nanoseconds:150_000_000)}
+  throw issue("Couldn't reach "+host+". Check the address and your connection.")
+ }
+
+ /// Setup: is this Canvas reachable with the current sign-in or token? Returns the student's name.
+ func whoAmI() async -> String? {
+  guard !host.isEmpty else{return nil}
+  if token != nil {try? await openOrigin()}
+  guard web.url?.host==host,web.url?.path.contains("/login") != true else{return nil}
+  let script="const r=await fetch('/api/v1/users/self',{credentials:'same-origin',headers:token?{Accept:'application/json',Authorization:'Bearer '+token}:{Accept:'application/json'}});if(!r.ok)return '';const u=JSON.parse((await r.text()).replace(/^while\\s*\\(1\\);\\s*/,''));return u.short_name||u.name||'you';"
+  let value=try? await web.callAsyncJavaScript(script,arguments:["token":token ?? ""],in:nil,contentWorld:.page)
+  let name=value as? String ?? "";return name.isEmpty ? nil:name
+ }
+
+ struct FoundCourse: Identifiable, Hashable { var id:String; var code:String; var name:String; var term:String; var picked:Bool }
+ /// Setup: the classes you're enrolled in right now, straight from Canvas.
+ func findCourses() async throws -> [FoundCourse] {
+  let script="""
+  const h=token?{Accept:'application/json',Authorization:'Bearer '+token}:{Accept:'application/json'};
+  const r=await fetch('/api/v1/courses?enrollment_state=active&per_page=100&include%5B%5D=term',{credentials:'same-origin',headers:h});
+  if(!r.ok)throw Error('Canvas said '+r.status);
+  const list=JSON.parse((await r.text()).replace(/^while\\s*\\(1\\);\\s*/,''));
+  return JSON.stringify(list.filter(c=>c&&c.name&&!c.access_restricted_by_date).map(c=>({id:String(c.id),code:c.course_code||'',name:c.name,term:(c.term&&c.term.name)||''})));
+  """
+  guard let raw=try await web.callAsyncJavaScript(script,arguments:["token":token ?? ""],in:nil,contentWorld:.page) as? String,let data=raw.data(using:.utf8),let rows=try JSONSerialization.jsonObject(with:data) as? [[String:String]] else{throw issue("Canvas didn't send your classes.")}
+  // The current term's classes come first and are picked; clubs, advising and old terms are not.
+  let terms=Dictionary(grouping:rows,by:{$0["term"] ?? ""}).mapValues(\.count)
+  let main=terms.filter{!$0.key.isEmpty && !$0.key.lowercased().contains("default")}.max{$0.value<$1.value}?.key
+  return rows.map{r in
+   let code=r["code"] ?? "",name=r["name"] ?? ""
+   let looksLikeClass=code.range(of:"[A-Za-z]{2,4}[ -]?[0-9]{3,4}",options:.regularExpression) != nil
+   return FoundCourse(id:r["id"] ?? "",code:code,name:name,term:r["term"] ?? "",picked:looksLikeClass && (main==nil || r["term"]==main))
+  }.sorted{($0.picked ? 0:1,$0.name)<($1.picked ? 0:1,$1.name)}
+ }
+
+ /// Setup: the private calendar feed Canvas makes for every student (so due dates never slip).
+ func calendarFeed() async -> String? {
+  let script="const r=await fetch('/api/v1/users/self/profile',{credentials:'same-origin',headers:token?{Accept:'application/json',Authorization:'Bearer '+token}:{Accept:'application/json'}});if(!r.ok)return '';const p=JSON.parse((await r.text()).replace(/^while\\s*\\(1\\);\\s*/,''));return (p.calendar&&p.calendar.ics)||'';"
+  let value=try? await web.callAsyncJavaScript(script,arguments:["token":token ?? ""],in:nil,contentWorld:.page)
+  let feed=value as? String ?? "";return feed.hasPrefix("https://") ? feed:nil
+ }
+
  func ensureActive(_ root:String,_ ident:String)throws {
   let data=try Data(contentsOf:URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge/state.json"));let v=try JSONSerialization.jsonObject(with:data) as? [String:Any];let r=v?["request"] as? [String:Any]
   if r?["id"] as? String != ident || r?["status"] as? String != "processing" {throw issue("Sync cancelled or replaced")}
  }
  func downloadResource(_ resource:[String:Any],root:String,ident:String)async throws->[String:Any]{
   let course=resource["course"] as? String ?? "",id=resource["id"] as? String ?? "",name=resource["name"] as? String ?? "file",size=(resource["size"] as? NSNumber)?.intValue ?? 0
-  guard size>0,size<=80*1024*1024,let url=URL(string:resource["download"] as? String ?? ""),url.host=="webcourses.ucf.edu",url.path=="/files/"+id+"/download" else{throw issue("File size/destination outside approved download bounds")}
+  guard size>0,size<=80*1024*1024,let url=URL(string:resource["download"] as? String ?? ""),url.host==host,url.path=="/files/"+id+"/download" else{throw issue("File size/destination outside approved download bounds")}
   let base=URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge"),indexURL=base.appendingPathComponent("canvas-material-cache-v2.json")
   var index=((try? Data(contentsOf:indexURL)).flatMap{try? JSONSerialization.jsonObject(with:$0) as? [String:[String:Any]]}) ?? [:]
   if index[id]==nil,let legacy=index[course+"|"+id],let p=legacy["path"] as? String,let raw=try? Data(contentsOf:URL(fileURLWithPath:p)),raw.count==size {var adopted=legacy;adopted["sha256"]=SHA256.hash(data:raw).map{String(format:"%02x",$0)}.joined();index[id]=adopted;index.removeValue(forKey:course+"|"+id);try JSONSerialization.data(withJSONObject:index,options:[.prettyPrinted,.sortedKeys]).write(to:indexURL,options:.atomic)}
@@ -198,15 +230,16 @@ import PDFKit
    var resolved=attempt==0 ? url:URL(string:url.absoluteString+"&hq_refresh="+String(Int(Date().timeIntervalSince1970*1000)))!
    if attempt==2 {
     let script="""
-    if(location.origin!=='https://webcourses.ucf.edu')throw Error('Canvas origin changed');
-    const response=await fetch('/api/v1/files/'+fileID+'?hq_refresh='+Date.now(),{method:'GET',credentials:'same-origin',redirect:'error',cache:'no-store',headers:{Accept:'application/json'}});
+    if(location.origin!=='\(origin)')throw Error('Canvas origin changed');
+    const response=await fetch('/api/v1/files/'+fileID+'?hq_refresh='+Date.now(),{method:'GET',credentials:'same-origin',redirect:'error',cache:'no-store',headers:token?{Accept:'application/json',Authorization:'Bearer '+token}:{Accept:'application/json'}});
     if(!response.ok)throw Error('Fresh file metadata HTTP '+response.status);
     const data=JSON.parse((await response.text()).replace(/^while\\s*\\(1\\);\\s*/,''));return data.url;
     """
-    guard let value=try await web.callAsyncJavaScript(script,arguments:["fileID":id],in:nil,contentWorld:.page) as? String,let fresh=URL(string:value),fresh.scheme=="https",let host=fresh.host,host=="webcourses.ucf.edu" || host.hasSuffix(".inscloudgate.net") || host.hasSuffix(".instructure.com") else{throw issue("Fresh file URL destination refused")}
+    guard let value=try await web.callAsyncJavaScript(script,arguments:["fileID":id,"token":token ?? ""],in:nil,contentWorld:.page) as? String,let fresh=URL(string:value),fresh.scheme=="https",let host=fresh.host,host==self.host || host.hasSuffix(".inscloudgate.net") || host.hasSuffix(".instructure.com") else{throw issue("Fresh file URL destination refused")}
     resolved=fresh
    }
    var request=URLRequest(url:resolved,cachePolicy:.reloadIgnoringLocalAndRemoteCacheData,timeoutInterval:30);request.setValue("no-cache",forHTTPHeaderField:"Cache-Control")
+   if let key=token,!key.isEmpty,resolved.host==host{request.setValue("Bearer "+key,forHTTPHeaderField:"Authorization")}
    let download=await web.startDownload(using:request);download.delegate=self
    let end=Date().addingTimeInterval(60)
    while !downloadFinished && Date()<end{try ensureActive(root,ident);try await Task.sleep(nanoseconds:100_000_000)}
@@ -224,10 +257,10 @@ import PDFKit
 struct CanvasWebView:NSViewRepresentable{let canvas:LocalCanvas;func makeNSView(context:Context)->WKWebView{canvas.web};func updateNSView(_ view:WKWebView,context:Context){}}
 struct CanvasSignIn:View{
  @ObservedObject var canvas:LocalCanvas;var done:()->Void
- var body:some View{VStack(alignment:.leading,spacing:14){HStack{Text("Canvas connection").font(.title2);Spacer();Button("Done"){done()}};Text(canvas.message).font(.system(size:13)).foregroundStyle(.secondary);Button("Open UCF sign-in"){canvas.openSignIn()}.disabled(canvas.message.hasPrefix("Checking"));CanvasWebView(canvas:canvas).frame(minWidth:780,minHeight:570)}.padding(20).frame(width:900,height:730)}
+ var body:some View{VStack(alignment:.leading,spacing:14){HStack{Text("Canvas connection").font(.title2);Spacer();Button("Done"){done()}};Text(canvas.message).font(.system(size:13)).foregroundStyle(.secondary);Button("Open sign-in"){canvas.openSignIn()}.disabled(canvas.message.hasPrefix("Checking"));CanvasWebView(canvas:canvas).frame(minWidth:780,minHeight:570)}.padding(20).frame(width:900,height:730)}
 }
 
 struct CanvasSessionDiagnostic:View{
  @ObservedObject var canvas:LocalCanvas;let root:String
- var body:some View{VStack(alignment:.leading,spacing:9){Text("Checks one CS1 assignment endpoint using this app’s existing sign-in. No credentials are extracted; this diagnostic does not change collection readiness.").font(.system(size:12));Button(canvas.sessionTesting ? "Testing…":"Test signed-in request"){canvas.testSession(root:root)}.disabled(canvas.sessionTesting);if !canvas.sessionTestResult.isEmpty{Text(canvas.sessionTestResult).font(.system(size:12)).textSelection(.enabled)}}}
+ var body:some View{VStack(alignment:.leading,spacing:9){Text("Checks one assignment list using this app’s existing sign-in. No credentials are extracted; this diagnostic does not change collection readiness.").font(.system(size:12));Button(canvas.sessionTesting ? "Testing…":"Test signed-in request"){canvas.testSession(root:root)}.disabled(canvas.sessionTesting);if !canvas.sessionTestResult.isEmpty{Text(canvas.sessionTestResult).font(.system(size:12)).textSelection(.enabled)}}}
 }
