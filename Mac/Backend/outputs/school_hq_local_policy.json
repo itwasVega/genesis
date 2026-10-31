@@ -1,0 +1,20 @@
+{
+  "id": "local-first-v4",
+  "required_sources": [
+    "canvas"
+  ],
+  "optional_sources": [
+    "mail"
+  ],
+  "consumer": "app_owned_local_worker_and_local_files",
+  "remote_publication_required": false,
+  "explanation": "Canvas is read through the app's own signed-in WebKit session; exam facts come from Canvas announcements. A connected mailbox (any IMAP provider, read-only) is an optional supplement for search and never blocks a sync.",
+  "canvas_browser": "app_owned_WebKit_persistent_profile",
+  "mail_transport": "imap_readonly_keychain_optional",
+  "notes_freshness": "collection_disabled_saved_references_only",
+  "disabled_sources": [
+    "remarkable",
+    "email",
+    "gmail"
+  ]
+}

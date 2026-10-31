@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "note": "Models are discovered from the connected account in Settings. Existing user choices are preserved.",
+  "jobs": {
+    "catalog": {
+      "model": "auto",
+      "effort": "medium",
+      "why": "Uses the selected account model for this study step."
+    },
+    "context": {
+      "model": "auto",
+      "effort": "low",
+      "why": "Uses the selected account model for this study step."
+    },
+    "facts": {
+      "model": "auto",
+      "effort": "medium",
+      "why": "Uses the selected account model for this study step."
+    },
+    "generate": {
+      "model": "auto",
+      "effort": "high",
+      "why": "Uses the selected account model for this study step."
+    },
+    "verify": {
+      "model": "auto",
+      "effort": "medium",
+      "why": "Uses the selected account model for this study step."
+    },
+    "grade": {
+      "model": "auto",
+      "effort": "medium",
+      "why": "Uses the selected account model for this study step."
+    },
+    "companion": {
+      "model": "auto",
+      "effort": "low",
+      "why": "Uses the selected account model for this study step."
+    }
+  },
+  "parallel_jobs": 3,
+  "fallback_model": "auto"
+}

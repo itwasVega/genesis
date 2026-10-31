@@ -1,0 +1,27 @@
+# Build output
+Build/
+DerivedData/
+*.xcarchive
+Deliverables/
+Mac/BundleResources/
+# Generated projects (run the generators; see BUILDING in README)
+*.xcodeproj/
+xcuserdata/
+# The relocatable Python runtime is supplied locally, not committed (see README)
+Mac/Runtime/
+# Python
+__pycache__/
+*.pyc
+.venv/
+# macOS
+.DS_Store
+._*
+# Never commit personal study data, accounts or secrets
+School HQ Study/
+School HQ App/Bridge/
+Canvas School Source/
+connections.json
+*.p12
+*.mobileprovision
+*.cer
+.env

@@ -1,0 +1,29 @@
+name: Feature request
+description: An idea that would make Genesis better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's hard right now?
+      description: Describe the moment where Genesis could help more.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Planning and Today
+        - Practice and grading
+        - Answer box
+        - Genesis companion
+        - Plugins (Canvas, iPhone notes, Calendar, Email, ...)
+        - iPhone app
+        - Something else

@@ -1,0 +1,23 @@
+Genesis includes the following third-party components.
+
+Python 3.12.14, from python-build-standalone via the local runtime bundle:
+  Python/lib/python3.12/LICENSE.txt
+  PythonDependencyLicenses.txt (upstream dependency license collection)
+  https://github.com/astral-sh/python-build-standalone
+The collection includes notices for optional upstream components; its inclusion
+does not mean every listed component is present. The packaged interpreter includes
+OpenSSL, SQLite, libffi, compression libraries, libedit, Tcl/Tk and timezone data.
+
+Calendar parsing dependencies (icalendar, python-dateutil, six, tzdata):
+  Backend/outputs/vendor/calendar/*dist-info/ (licenses retained per package)
+
+KaTeX and associated fonts:
+  Math/LICENSE and Math/fonts/ (MIT license notices retained)
+
+Instrument Serif, Copyright 2022 The Instrument Serif Project Authors:
+  Fonts/OFL.txt (SIL Open Font License 1.1)
+
+PDF extraction and OCR use Apple's PDFKit and Vision frameworks supplied by macOS.
+PyMuPDF and the developer's previous private font files are not part of the app.
+
+Codex is installed and authenticated separately by the user. It is not bundled.

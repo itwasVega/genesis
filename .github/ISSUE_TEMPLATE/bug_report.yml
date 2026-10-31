@@ -1,0 +1,55 @@
+name: Bug report
+description: Something in Genesis isn't working right
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! **Please don't include course material, grades, emails or anything personal.** Describe it instead, or use made-up examples.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a task
+        2. Drop a PDF onto the answer box
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Genesis build
+      description: Genesis › About Genesis
+      placeholder: 1.0 (46)
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 26.1
+    validations:
+      required: true
+  - type: checkboxes
+    id: plugins
+    attributes:
+      label: Plugins you have on
+      options:
+        - label: Canvas
+        - label: iPhone notes
+        - label: Calendar
+        - label: Email
+        - label: Professor websites
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else
+      description: Blur anything personal first.

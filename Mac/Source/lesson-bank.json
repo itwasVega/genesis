@@ -1,0 +1,1910 @@
+{
+  "schema": 1,
+  "authorship": "Original School HQ teaching and practice. No Khan Academy exercises or proprietary content copied. Research is documented separately.",
+  "priority_until": "2026-10-17",
+  "limits": "Offline original practice; CS1 topics are tied to the saved October 12 sample. Current exam scope, new announcements and unsynced notes are not verified. Numeric/trace/short-answer checks grade the submitted final answer, not the reasoning on paper. Full programs and handwriting need reviewed assessment. This practice is not a fresh Daily Brief or a complete exam simulation.",
+  "lessons": [
+    {
+      "id": "c-syntax-and-pointers",
+      "skill_id": "COP3502C:c-syntax-and-pointers:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Trace the value behind a pointer",
+      "order": 0,
+      "prerequisites": [],
+      "teaching": "A pointer stores an address. *p reads or writes the value at that address. First draw one box per integer, then one arrow per pointer. An assignment through *p changes the box, not the pointer.",
+      "worked_example": "int x=4; int *p=&x; *p += 2;\nThe arrow still points to x; x is now 6. Write the final value, not the address.",
+      "cue": "Address points; star touches the value.",
+      "hint": "Draw x and p separately, then apply the compound assignment to x.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "On paper trace: int x=3; int *p=&x; *p += 5; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 8,
+            "answer_for_test": "8",
+            "solution": "p aliases x, so x becomes 3+5=8.",
+            "explanation": "p aliases x, so x becomes 3+5=8.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "On paper trace: int x=4; int *p=&x; *p += 6; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 10,
+            "answer_for_test": "10",
+            "solution": "p aliases x, so x becomes 4+6=10.",
+            "explanation": "p aliases x, so x becomes 4+6=10.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "On paper trace: int x=5; int *p=&x; *p += 7; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 12,
+            "answer_for_test": "12",
+            "solution": "p aliases x, so x becomes 5+7=12.",
+            "explanation": "p aliases x, so x becomes 5+7=12.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "On paper trace: int x=6; int *p=&x; *p += 8; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 14,
+            "answer_for_test": "14",
+            "solution": "p aliases x, so x becomes 6+8=14.",
+            "explanation": "p aliases x, so x becomes 6+8=14.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "On paper trace: int x=7; int *p=&x; *p += 9; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 16,
+            "answer_for_test": "16",
+            "solution": "p aliases x, so x becomes 7+9=16.",
+            "explanation": "p aliases x, so x becomes 7+9=16.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "On paper trace: int x=8; int *p=&x; *p += 10; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 18,
+            "answer_for_test": "18",
+            "solution": "p aliases x, so x becomes 8+10=18.",
+            "explanation": "p aliases x, so x becomes 8+10=18.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "On paper trace: int x=9; int *p=&x; *p += 11; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 20,
+            "answer_for_test": "20",
+            "solution": "p aliases x, so x becomes 9+11=20.",
+            "explanation": "p aliases x, so x becomes 9+11=20.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "On paper trace: int x=10; int *p=&x; *p += 12; printf(\"%d\", x); What one integer is printed?",
+          "checker": {
+            "type": "number",
+            "expected": 22,
+            "answer_for_test": "22",
+            "solution": "p aliases x, so x becomes 10+12=22.",
+            "explanation": "p aliases x, so x becomes 10+12=22.",
+            "feedback": "Apply the update to the integer reached by p."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            2
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:c-syntax-and-pointers",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "dynamic-allocation-and-ownership",
+      "skill_id": "COP3502C:dynamic-allocation-and-ownership:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Count allocations and release every owner",
+      "order": 1,
+      "prerequisites": [
+        "c-syntax-and-pointers"
+      ],
+      "teaching": "For an array of n separately allocated strings, allocate the pointer array once, then each string once. Each successful allocation needs one matching free. Release child strings before freeing the array holding their pointers. Strings need one extra byte for \\0.",
+      "worked_example": "char **a holds 3 separately malloc-allocated strings. There are 4 blocks: 3 strings and the pointer array. Free a[0], a[1], a[2], then a.",
+      "cue": "Children first; owner last.",
+      "hint": "Count the pointer array as one block, then count every separately allocated string.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "A char **names array is malloc-allocated, then 2 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 3,
+            "answer_for_test": "3",
+            "solution": "2 string frees, then one pointer-array free: 3 total.",
+            "explanation": "2 string frees, then one pointer-array free: 3 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "A char **names array is malloc-allocated, then 3 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 4,
+            "answer_for_test": "4",
+            "solution": "3 string frees, then one pointer-array free: 4 total.",
+            "explanation": "3 string frees, then one pointer-array free: 4 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "A char **names array is malloc-allocated, then 4 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 5,
+            "answer_for_test": "5",
+            "solution": "4 string frees, then one pointer-array free: 5 total.",
+            "explanation": "4 string frees, then one pointer-array free: 5 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "A char **names array is malloc-allocated, then 5 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 6,
+            "answer_for_test": "6",
+            "solution": "5 string frees, then one pointer-array free: 6 total.",
+            "explanation": "5 string frees, then one pointer-array free: 6 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "A char **names array is malloc-allocated, then 6 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 7,
+            "answer_for_test": "7",
+            "solution": "6 string frees, then one pointer-array free: 7 total.",
+            "explanation": "6 string frees, then one pointer-array free: 7 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "A char **names array is malloc-allocated, then 7 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 8,
+            "answer_for_test": "8",
+            "solution": "7 string frees, then one pointer-array free: 8 total.",
+            "explanation": "7 string frees, then one pointer-array free: 8 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "A char **names array is malloc-allocated, then 8 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 9,
+            "answer_for_test": "9",
+            "solution": "8 string frees, then one pointer-array free: 9 total.",
+            "explanation": "8 string frees, then one pointer-array free: 9 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "A char **names array is malloc-allocated, then 9 name strings are separately malloc-allocated and stored in it. All allocations succeed; no sharing. How many total free calls release every block? Enter one integer; on paper list the freeing order.",
+          "checker": {
+            "type": "number",
+            "expected": 10,
+            "answer_for_test": "10",
+            "solution": "9 string frees, then one pointer-array free: 10 total.",
+            "explanation": "9 string frees, then one pointer-array free: 10 total.",
+            "feedback": "Do not forget the pointer-array allocation."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            2,
+            3
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:dynamic-allocation-and-ownership",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "recursion-tracing",
+      "skill_id": "COP3502C:recursion-tracing:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Unwind a recursive return value",
+      "order": 2,
+      "prerequisites": [
+        "c-syntax-and-pointers"
+      ],
+      "teaching": "Identify the base case before expanding any calls. Write pending arithmetic on separate lines. Reach the base return, then substitute upward. Do not confuse printed output with a return value.",
+      "worked_example": "For g(0)=1 and g(n)=2*g(n-1)+1: g(1)=3, g(2)=7. Each pending +1 waits for the smaller call.",
+      "cue": "Base first; return values climb back.",
+      "hint": "Build a table from g(0) upward; each new row doubles the previous result and adds 1.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(1). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 3,
+            "answer_for_test": "3",
+            "solution": "g(k)=2^(k+1)-1, so g(1)=3. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(1)=3. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(2). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 7,
+            "answer_for_test": "7",
+            "solution": "g(k)=2^(k+1)-1, so g(2)=7. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(2)=7. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(3). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 15,
+            "answer_for_test": "15",
+            "solution": "g(k)=2^(k+1)-1, so g(3)=15. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(3)=15. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(4). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 31,
+            "answer_for_test": "31",
+            "solution": "g(k)=2^(k+1)-1, so g(4)=31. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(4)=31. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(5). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 63,
+            "answer_for_test": "63",
+            "solution": "g(k)=2^(k+1)-1, so g(5)=63. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(5)=63. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(6). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 127,
+            "answer_for_test": "127",
+            "solution": "g(k)=2^(k+1)-1, so g(6)=127. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(6)=127. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(7). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 255,
+            "answer_for_test": "255",
+            "solution": "g(k)=2^(k+1)-1, so g(7)=255. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(7)=255. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "int g(int n) { if(n==0) return 1; return 2*g(n-1)+1; }\nOn paper write the calls and unwind g(8). Enter only the returned integer.",
+          "checker": {
+            "type": "number",
+            "expected": 511,
+            "answer_for_test": "511",
+            "solution": "g(k)=2^(k+1)-1, so g(8)=511. Verify by successive substitution.",
+            "explanation": "g(k)=2^(k+1)-1, so g(8)=511. Verify by successive substitution.",
+            "feedback": "Keep the base value 1 and apply both multiplication and addition on each return."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            3,
+            4
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:recursion-tracing",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "linked-list-traversal",
+      "skill_id": "COP3502C:linked-list-traversal:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Follow next without skipping a node",
+      "order": 3,
+      "prerequisites": [
+        "c-syntax-and-pointers"
+      ],
+      "teaching": "Write every node value and draw next arrows. A traversal reads the current node, then follows next once. If a loop inserts a node and also changes its cursor, track both operations separately.",
+      "worked_example": "For 2 \u2192 5 \u2192 9 \u2192 NULL, starting at the head and moving next twice reaches 9. The first node is step zero.",
+      "cue": "Count moves, not nodes.",
+      "hint": "Start at index zero. Each next moves one arrow.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "The list is 2 \u2192 5 \u2192 9 \u2192 11 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 9,
+            "answer_for_test": "9",
+            "solution": "Two moves reach the third node, whose value is 9.",
+            "explanation": "Two moves reach the third node, whose value is 9.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "The list is 3 \u2192 6 \u2192 10 \u2192 12 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 10,
+            "answer_for_test": "10",
+            "solution": "Two moves reach the third node, whose value is 10.",
+            "explanation": "Two moves reach the third node, whose value is 10.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "The list is 4 \u2192 7 \u2192 11 \u2192 13 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 11,
+            "answer_for_test": "11",
+            "solution": "Two moves reach the third node, whose value is 11.",
+            "explanation": "Two moves reach the third node, whose value is 11.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "The list is 5 \u2192 8 \u2192 12 \u2192 14 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 12,
+            "answer_for_test": "12",
+            "solution": "Two moves reach the third node, whose value is 12.",
+            "explanation": "Two moves reach the third node, whose value is 12.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "The list is 6 \u2192 9 \u2192 13 \u2192 15 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 13,
+            "answer_for_test": "13",
+            "solution": "Two moves reach the third node, whose value is 13.",
+            "explanation": "Two moves reach the third node, whose value is 13.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "The list is 7 \u2192 10 \u2192 14 \u2192 16 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 14,
+            "answer_for_test": "14",
+            "solution": "Two moves reach the third node, whose value is 14.",
+            "explanation": "Two moves reach the third node, whose value is 14.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "The list is 8 \u2192 11 \u2192 15 \u2192 17 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 15,
+            "answer_for_test": "15",
+            "solution": "Two moves reach the third node, whose value is 15.",
+            "explanation": "Two moves reach the third node, whose value is 15.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "The list is 9 \u2192 12 \u2192 16 \u2192 18 \u2192 NULL. p starts at the head, then executes p=p->next twice. Enter p->data. Draw the two moves on paper first.",
+          "checker": {
+            "type": "number",
+            "expected": 16,
+            "answer_for_test": "16",
+            "solution": "Two moves reach the third node, whose value is 16.",
+            "explanation": "Two moves reach the third node, whose value is 16.",
+            "feedback": "The head is the starting position, not the first move."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            5,
+            6
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:linked-list-traversal",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "linked-list-insert-delete",
+      "skill_id": "COP3502C:linked-list-insert-delete:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Splice a node without losing the rest",
+      "order": 4,
+      "prerequisites": [
+        "linked-list-traversal",
+        "dynamic-allocation-and-ownership"
+      ],
+      "teaching": "For insertion after p, set newNode->next=p->next before p->next=newNode. This saves the old successor before replacing the edge. For deletion, save the removed node, reconnect the list, then free the removed node.",
+      "worked_example": "4 \u2192 8 \u2192 12. Insert 6 after 4: first new->next points to 8, then 4.next points to new. Result 4 \u2192 6 \u2192 8 \u2192 12.",
+      "cue": "Save the rest, then splice.",
+      "hint": "The new node belongs immediately after the first node, and every old node keeps its relative order.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "The list is 2 \u2192 7 \u2192 12 \u2192 NULL. p is the first node. A new node contains 4. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              2,
+              4,
+              7,
+              12
+            ],
+            "answer_for_test": "2 4 7 12",
+            "solution": "The order is 2 \u2192 4 \u2192 7 \u2192 12.",
+            "explanation": "The order is 2 \u2192 4 \u2192 7 \u2192 12.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "The list is 3 \u2192 8 \u2192 13 \u2192 NULL. p is the first node. A new node contains 5. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              3,
+              5,
+              8,
+              13
+            ],
+            "answer_for_test": "3 5 8 13",
+            "solution": "The order is 3 \u2192 5 \u2192 8 \u2192 13.",
+            "explanation": "The order is 3 \u2192 5 \u2192 8 \u2192 13.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "The list is 4 \u2192 9 \u2192 14 \u2192 NULL. p is the first node. A new node contains 6. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              4,
+              6,
+              9,
+              14
+            ],
+            "answer_for_test": "4 6 9 14",
+            "solution": "The order is 4 \u2192 6 \u2192 9 \u2192 14.",
+            "explanation": "The order is 4 \u2192 6 \u2192 9 \u2192 14.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "The list is 5 \u2192 10 \u2192 15 \u2192 NULL. p is the first node. A new node contains 7. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              5,
+              7,
+              10,
+              15
+            ],
+            "answer_for_test": "5 7 10 15",
+            "solution": "The order is 5 \u2192 7 \u2192 10 \u2192 15.",
+            "explanation": "The order is 5 \u2192 7 \u2192 10 \u2192 15.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "The list is 6 \u2192 11 \u2192 16 \u2192 NULL. p is the first node. A new node contains 8. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              6,
+              8,
+              11,
+              16
+            ],
+            "answer_for_test": "6 8 11 16",
+            "solution": "The order is 6 \u2192 8 \u2192 11 \u2192 16.",
+            "explanation": "The order is 6 \u2192 8 \u2192 11 \u2192 16.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "The list is 7 \u2192 12 \u2192 17 \u2192 NULL. p is the first node. A new node contains 9. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              7,
+              9,
+              12,
+              17
+            ],
+            "answer_for_test": "7 9 12 17",
+            "solution": "The order is 7 \u2192 9 \u2192 12 \u2192 17.",
+            "explanation": "The order is 7 \u2192 9 \u2192 12 \u2192 17.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "The list is 8 \u2192 13 \u2192 18 \u2192 NULL. p is the first node. A new node contains 10. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              8,
+              10,
+              13,
+              18
+            ],
+            "answer_for_test": "8 10 13 18",
+            "solution": "The order is 8 \u2192 10 \u2192 13 \u2192 18.",
+            "explanation": "The order is 8 \u2192 10 \u2192 13 \u2192 18.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "The list is 9 \u2192 14 \u2192 19 \u2192 NULL. p is the first node. A new node contains 11. Execute newNode->next=p->next; p->next=newNode. Enter every value from head to tail, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              9,
+              11,
+              14,
+              19
+            ],
+            "answer_for_test": "9 11 14 19",
+            "solution": "The order is 9 \u2192 11 \u2192 14 \u2192 19.",
+            "explanation": "The order is 9 \u2192 11 \u2192 14 \u2192 19.",
+            "feedback": "Set the new node\u2019s successor to the old successor before redirecting p."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            5,
+            6
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:linked-list-insert-delete",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "stacks",
+      "skill_id": "COP3502C:stacks:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Trace last in, first out",
+      "order": 5,
+      "prerequisites": [
+        "c-syntax-and-pointers"
+      ],
+      "teaching": "A stack pops its most recently pushed remaining value. Keep a vertical column, with the top at the bottom of your written row. Write popped outputs separately so you do not accidentally push them back.",
+      "worked_example": "push 2, push 7, pop, push 9, pop, pop produces 7,9,2.",
+      "cue": "Stack: last in leaves first.",
+      "hint": "Cross out only the current top on each pop.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "Start with an empty stack. push(1); push(5); pop(); push(9); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              5,
+              9,
+              1
+            ],
+            "answer_for_test": "5 9 1",
+            "solution": "The first pop removes 5; the second removes 9; the final pop removes 1.",
+            "explanation": "The first pop removes 5; the second removes 9; the final pop removes 1.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "Start with an empty stack. push(2); push(6); pop(); push(10); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              6,
+              10,
+              2
+            ],
+            "answer_for_test": "6 10 2",
+            "solution": "The first pop removes 6; the second removes 10; the final pop removes 2.",
+            "explanation": "The first pop removes 6; the second removes 10; the final pop removes 2.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "Start with an empty stack. push(3); push(7); pop(); push(11); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              7,
+              11,
+              3
+            ],
+            "answer_for_test": "7 11 3",
+            "solution": "The first pop removes 7; the second removes 11; the final pop removes 3.",
+            "explanation": "The first pop removes 7; the second removes 11; the final pop removes 3.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "Start with an empty stack. push(4); push(8); pop(); push(12); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              8,
+              12,
+              4
+            ],
+            "answer_for_test": "8 12 4",
+            "solution": "The first pop removes 8; the second removes 12; the final pop removes 4.",
+            "explanation": "The first pop removes 8; the second removes 12; the final pop removes 4.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "Start with an empty stack. push(5); push(9); pop(); push(13); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              9,
+              13,
+              5
+            ],
+            "answer_for_test": "9 13 5",
+            "solution": "The first pop removes 9; the second removes 13; the final pop removes 5.",
+            "explanation": "The first pop removes 9; the second removes 13; the final pop removes 5.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "Start with an empty stack. push(6); push(10); pop(); push(14); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              10,
+              14,
+              6
+            ],
+            "answer_for_test": "10 14 6",
+            "solution": "The first pop removes 10; the second removes 14; the final pop removes 6.",
+            "explanation": "The first pop removes 10; the second removes 14; the final pop removes 6.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "Start with an empty stack. push(7); push(11); pop(); push(15); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              11,
+              15,
+              7
+            ],
+            "answer_for_test": "11 15 7",
+            "solution": "The first pop removes 11; the second removes 15; the final pop removes 7.",
+            "explanation": "The first pop removes 11; the second removes 15; the final pop removes 7.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "Start with an empty stack. push(8); push(12); pop(); push(16); pop(); pop(). Enter the THREE popped values in order, separated by spaces. Trace on paper.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              12,
+              16,
+              8
+            ],
+            "answer_for_test": "12 16 8",
+            "solution": "The first pop removes 12; the second removes 16; the final pop removes 8.",
+            "explanation": "The first pop removes 12; the second removes 16; the final pop removes 8.",
+            "feedback": "Each pop removes the newest remaining item, not the oldest."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            6,
+            7
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:stacks",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "queues",
+      "skill_id": "COP3502C:queues:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Trace first in, first out",
+      "order": 6,
+      "prerequisites": [
+        "linked-list-traversal"
+      ],
+      "teaching": "A queue removes its oldest remaining item from the front. New values join at the back. After removing the only linked-list node, both front and back must be NULL. Circular-array front indices wrap using modulo capacity.",
+      "worked_example": "enqueue 3, enqueue 8, dequeue, enqueue 1, dequeue produces 3,8. The new 1 remains queued.",
+      "cue": "Queue: first in leaves first.",
+      "hint": "Track the front at the left; new values always join at the right.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "An empty queue receives enqueue(1), enqueue(7), dequeue(), enqueue(3), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              1,
+              7
+            ],
+            "answer_for_test": "1 7",
+            "solution": "The dequeues return 1 then 7; 3 remains.",
+            "explanation": "The dequeues return 1 then 7; 3 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "An empty queue receives enqueue(2), enqueue(8), dequeue(), enqueue(4), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              2,
+              8
+            ],
+            "answer_for_test": "2 8",
+            "solution": "The dequeues return 2 then 8; 4 remains.",
+            "explanation": "The dequeues return 2 then 8; 4 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "An empty queue receives enqueue(3), enqueue(9), dequeue(), enqueue(5), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              3,
+              9
+            ],
+            "answer_for_test": "3 9",
+            "solution": "The dequeues return 3 then 9; 5 remains.",
+            "explanation": "The dequeues return 3 then 9; 5 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "An empty queue receives enqueue(4), enqueue(10), dequeue(), enqueue(6), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              4,
+              10
+            ],
+            "answer_for_test": "4 10",
+            "solution": "The dequeues return 4 then 10; 6 remains.",
+            "explanation": "The dequeues return 4 then 10; 6 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "An empty queue receives enqueue(5), enqueue(11), dequeue(), enqueue(7), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              5,
+              11
+            ],
+            "answer_for_test": "5 11",
+            "solution": "The dequeues return 5 then 11; 7 remains.",
+            "explanation": "The dequeues return 5 then 11; 7 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "An empty queue receives enqueue(6), enqueue(12), dequeue(), enqueue(8), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              6,
+              12
+            ],
+            "answer_for_test": "6 12",
+            "solution": "The dequeues return 6 then 12; 8 remains.",
+            "explanation": "The dequeues return 6 then 12; 8 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "An empty queue receives enqueue(7), enqueue(13), dequeue(), enqueue(9), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              7,
+              13
+            ],
+            "answer_for_test": "7 13",
+            "solution": "The dequeues return 7 then 13; 9 remains.",
+            "explanation": "The dequeues return 7 then 13; 9 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "An empty queue receives enqueue(8), enqueue(14), dequeue(), enqueue(10), dequeue(). Enter the TWO returned dequeue values in order, separated by spaces.",
+          "checker": {
+            "type": "sequence",
+            "expected": [
+              8,
+              14
+            ],
+            "answer_for_test": "8 14",
+            "solution": "The dequeues return 8 then 14; 10 remains.",
+            "explanation": "The dequeues return 8 then 14; 10 remains.",
+            "feedback": "A queue removes the oldest value, not the most recently added one."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            7
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:queues",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "binary-search",
+      "skill_id": "COP3502C:binary-search:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Discard the correct half of a sorted interval",
+      "order": 7,
+      "prerequisites": [
+        "c-syntax-and-pointers"
+      ],
+      "teaching": "Binary search keeps an inclusive low..high interval in a sorted array. If key<a[mid], no position at or after mid can match: set high=mid-1. If key>a[mid], set low=mid+1. Recompute mid after every interval change.",
+      "worked_example": "low=0, high=8, mid=4. If the key is smaller than a[4], high becomes 3; low remains 0.",
+      "cue": "Too small? Search left. Too large? Search right.",
+      "hint": "For key<a[mid], remove mid and every larger index: high=mid-1.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "An ascending sorted array is searched with low=0, high=4, mid=2. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 1,
+            "answer_for_test": "1",
+            "solution": "high=mid-1=2-1=1.",
+            "explanation": "high=mid-1=2-1=1.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "An ascending sorted array is searched with low=0, high=6, mid=3. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 2,
+            "answer_for_test": "2",
+            "solution": "high=mid-1=3-1=2.",
+            "explanation": "high=mid-1=3-1=2.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "An ascending sorted array is searched with low=0, high=8, mid=4. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 3,
+            "answer_for_test": "3",
+            "solution": "high=mid-1=4-1=3.",
+            "explanation": "high=mid-1=4-1=3.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "An ascending sorted array is searched with low=0, high=10, mid=5. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 4,
+            "answer_for_test": "4",
+            "solution": "high=mid-1=5-1=4.",
+            "explanation": "high=mid-1=5-1=4.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "An ascending sorted array is searched with low=0, high=12, mid=6. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 5,
+            "answer_for_test": "5",
+            "solution": "high=mid-1=6-1=5.",
+            "explanation": "high=mid-1=6-1=5.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "An ascending sorted array is searched with low=0, high=14, mid=7. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 6,
+            "answer_for_test": "6",
+            "solution": "high=mid-1=7-1=6.",
+            "explanation": "high=mid-1=7-1=6.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "An ascending sorted array is searched with low=0, high=16, mid=8. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 7,
+            "answer_for_test": "7",
+            "solution": "high=mid-1=8-1=7.",
+            "explanation": "high=mid-1=8-1=7.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "An ascending sorted array is searched with low=0, high=18, mid=9. key<a[mid]. After the standard inclusive-interval update, what is the NEW high index? Enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 8,
+            "answer_for_test": "8",
+            "solution": "high=mid-1=9-1=8.",
+            "explanation": "high=mid-1=9-1=8.",
+            "feedback": "Exclude mid itself when its value is already known to be too large."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            9
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:binary-search",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "runtime-analysis",
+      "skill_id": "COP3502C:runtime-analysis:targeted-answer-check",
+      "course": "COP3502C",
+      "title": "Count work before choosing Big O",
+      "order": 8,
+      "prerequisites": [
+        "binary-search",
+        "recursion-tracing"
+      ],
+      "teaching": "A loop running n times around another n-iteration loop performs n*n work. A doubling loop takes logarithmically many iterations. Sequential blocks add their costs; nested blocks multiply. Big O keeps the dominant growing term.",
+      "worked_example": "A doubling loop followed by a full n-by-n loop costs log n+n\u00b2, so the total is O(n\u00b2).",
+      "cue": "Nested multiply; sequential add; dominant term stays.",
+      "hint": "Each of the n outer iterations performs all n inner iterations.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 2 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 3 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 4 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 5 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 6 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 7 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 8 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "For arbitrary positive n, this code executes work++ in two complete loops: for(i=0;i<n;i++) for(j=0;j<n;j++) work++; Then a separate loop runs 9 times regardless of n. Enter only the tight dominant Big O as O(n^2), O(n), or O(log n).",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "O(n^2)",
+              "O(n\u00b2)",
+              "O(n*n)"
+            ],
+            "answer_for_test": "O(n^2)",
+            "solution": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "explanation": "There are n\u00b2 increments plus constant work, giving O(n\u00b2).",
+            "feedback": "The two complete n-length nested loops multiply, not add."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Saved CS1 sample \u2022 topic reference",
+          "origin": "official",
+          "location": "Canvas School Source/COP3502C/Materials/CS1 Midterm Sample.pdf",
+          "pages": [
+            8,
+            9
+          ],
+          "section": "Topic reference; practice here is original, not an official exam question",
+          "captured_at": "2026-10-12",
+          "sha256": "5fcbc9dcbb3f542e77a0a3d28f9d57b6cd431d41afab4a6331f7068dee6c9361"
+        }
+      ],
+      "parent_skill_id": "COP3502C:runtime-analysis",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "arithmetic-and-integer-division",
+      "skill_id": "COP3330:arithmetic-and-integer-division:targeted-answer-check",
+      "course": "COP3330",
+      "title": "Trace Java integer division",
+      "order": 9,
+      "prerequisites": [],
+      "teaching": "When both operands are int, Java integer division truncates toward zero. Assigning that result to double afterward does not recover the discarded fraction. Convert an operand before dividing when a fractional result is required.",
+      "worked_example": "double z=7/2; stores 3.0, because 7/2 is computed as integer division first. 7/2.0 would yield 3.5.",
+      "cue": "Types decide division before assignment.",
+      "hint": "Do the integer division first. Only then think about the type receiving the result.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "Java: int a=5; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 2,
+            "answer_for_test": "2",
+            "solution": "5/2 truncates to 2 because both operands are int.",
+            "explanation": "5/2 truncates to 2 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "Java: int a=7; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 3,
+            "answer_for_test": "3",
+            "solution": "7/2 truncates to 3 because both operands are int.",
+            "explanation": "7/2 truncates to 3 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "Java: int a=9; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 4,
+            "answer_for_test": "4",
+            "solution": "9/2 truncates to 4 because both operands are int.",
+            "explanation": "9/2 truncates to 4 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "Java: int a=11; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 5,
+            "answer_for_test": "5",
+            "solution": "11/2 truncates to 5 because both operands are int.",
+            "explanation": "11/2 truncates to 5 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "Java: int a=13; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 6,
+            "answer_for_test": "6",
+            "solution": "13/2 truncates to 6 because both operands are int.",
+            "explanation": "13/2 truncates to 6 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "Java: int a=15; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 7,
+            "answer_for_test": "7",
+            "solution": "15/2 truncates to 7 because both operands are int.",
+            "explanation": "15/2 truncates to 7 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "Java: int a=17; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 8,
+            "answer_for_test": "8",
+            "solution": "17/2 truncates to 8 because both operands are int.",
+            "explanation": "17/2 truncates to 8 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "Java: int a=19; int b=2; int result=a/b; What integer is in result? Write the truncation on paper, then enter one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 9,
+            "answer_for_test": "9",
+            "solution": "19/2 truncates to 9 because both operands are int.",
+            "explanation": "19/2 truncates to 9 because both operands are int.",
+            "feedback": "Integer division discards the fractional part."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Original School HQ lesson and practice",
+          "origin": "original",
+          "section": "Complete lesson and question shown here"
+        }
+      ],
+      "parent_skill_id": "COP3330:arithmetic-and-integer-division",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "objects-and-references",
+      "skill_id": "COP3330:objects-and-references:targeted-answer-check",
+      "course": "COP3330",
+      "title": "Distinguish aliasing from copying",
+      "order": 10,
+      "prerequisites": [
+        "arithmetic-and-integer-division"
+      ],
+      "teaching": "An array variable holds a reference. Assigning b=a copies that reference, so both names reach one array. Editing b[0] also changes the value seen through a[0]. Reassigning b to a new array changes only b.",
+      "worked_example": "int[] a={2,8}; int[] b=a; b[0]=5; now a[0] is 5. No second array was created.",
+      "cue": "Two names can share one object.",
+      "hint": "Draw a and b as two arrows to the same array.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "Java: int[] a={2, 3}; int[] b=a; b[0]+=4; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 6,
+            "answer_for_test": "6",
+            "solution": "a and b alias the same array; its first value becomes 2+4=6.",
+            "explanation": "a and b alias the same array; its first value becomes 2+4=6.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "Java: int[] a={3, 4}; int[] b=a; b[0]+=5; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 8,
+            "answer_for_test": "8",
+            "solution": "a and b alias the same array; its first value becomes 3+5=8.",
+            "explanation": "a and b alias the same array; its first value becomes 3+5=8.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "Java: int[] a={4, 5}; int[] b=a; b[0]+=6; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 10,
+            "answer_for_test": "10",
+            "solution": "a and b alias the same array; its first value becomes 4+6=10.",
+            "explanation": "a and b alias the same array; its first value becomes 4+6=10.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "Java: int[] a={5, 6}; int[] b=a; b[0]+=7; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 12,
+            "answer_for_test": "12",
+            "solution": "a and b alias the same array; its first value becomes 5+7=12.",
+            "explanation": "a and b alias the same array; its first value becomes 5+7=12.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "Java: int[] a={6, 7}; int[] b=a; b[0]+=8; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 14,
+            "answer_for_test": "14",
+            "solution": "a and b alias the same array; its first value becomes 6+8=14.",
+            "explanation": "a and b alias the same array; its first value becomes 6+8=14.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "Java: int[] a={7, 8}; int[] b=a; b[0]+=9; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 16,
+            "answer_for_test": "16",
+            "solution": "a and b alias the same array; its first value becomes 7+9=16.",
+            "explanation": "a and b alias the same array; its first value becomes 7+9=16.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "Java: int[] a={8, 9}; int[] b=a; b[0]+=10; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 18,
+            "answer_for_test": "18",
+            "solution": "a and b alias the same array; its first value becomes 8+10=18.",
+            "explanation": "a and b alias the same array; its first value becomes 8+10=18.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "Java: int[] a={9, 10}; int[] b=a; b[0]+=11; What is a[0]? Draw the references before entering one integer.",
+          "checker": {
+            "type": "number",
+            "expected": 20,
+            "answer_for_test": "20",
+            "solution": "a and b alias the same array; its first value becomes 9+11=20.",
+            "explanation": "a and b alias the same array; its first value becomes 9+11=20.",
+            "feedback": "Reference assignment does not clone the array."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Original School HQ lesson and practice",
+          "origin": "original",
+          "section": "Complete lesson and question shown here"
+        }
+      ],
+      "parent_skill_id": "COP3330:objects-and-references",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "expanding-and-factoring",
+      "skill_id": "MAC2311C:expanding-and-factoring:targeted-answer-check",
+      "course": "MAC2311C",
+      "title": "Expand carefully before differentiating",
+      "order": 11,
+      "prerequisites": [],
+      "teaching": "Distribute each term across every term in the other factor. Keep signs attached to terms. Combine only like powers. This is an algebra check, not a derivative question.",
+      "worked_example": "(x+2)(x-3)=x\u00b2-3x+2x-6=x\u00b2-x-6. Check by substituting x=0: both sides are -6.",
+      "cue": "Every term meets every term.",
+      "hint": "Write the four products separately; combine the two x terms last.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "On paper expand (x+2)(x-3) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-6",
+            "answer_for_test": "x^2-x-6",
+            "solution": "x\u00b2+(2-3)x-6 = x\u00b2-x-6.",
+            "explanation": "x\u00b2+(2-3)x-6 = x\u00b2-x-6.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "On paper expand (x+3)(x-4) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-12",
+            "answer_for_test": "x^2-x-12",
+            "solution": "x\u00b2+(3-4)x-12 = x\u00b2-x-12.",
+            "explanation": "x\u00b2+(3-4)x-12 = x\u00b2-x-12.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "On paper expand (x+4)(x-5) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-20",
+            "answer_for_test": "x^2-x-20",
+            "solution": "x\u00b2+(4-5)x-20 = x\u00b2-x-20.",
+            "explanation": "x\u00b2+(4-5)x-20 = x\u00b2-x-20.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "On paper expand (x+5)(x-6) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-30",
+            "answer_for_test": "x^2-x-30",
+            "solution": "x\u00b2+(5-6)x-30 = x\u00b2-x-30.",
+            "explanation": "x\u00b2+(5-6)x-30 = x\u00b2-x-30.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "On paper expand (x+6)(x-7) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-42",
+            "answer_for_test": "x^2-x-42",
+            "solution": "x\u00b2+(6-7)x-42 = x\u00b2-x-42.",
+            "explanation": "x\u00b2+(6-7)x-42 = x\u00b2-x-42.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "On paper expand (x+7)(x-8) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-56",
+            "answer_for_test": "x^2-x-56",
+            "solution": "x\u00b2+(7-8)x-56 = x\u00b2-x-56.",
+            "explanation": "x\u00b2+(7-8)x-56 = x\u00b2-x-56.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "On paper expand (x+8)(x-9) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-72",
+            "answer_for_test": "x^2-x-72",
+            "solution": "x\u00b2+(8-9)x-72 = x\u00b2-x-72.",
+            "explanation": "x\u00b2+(8-9)x-72 = x\u00b2-x-72.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "On paper expand (x+9)(x-10) and combine like terms. Enter the resulting polynomial in x, using * for multiplication and ^ for powers.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "x^2-x-90",
+            "answer_for_test": "x^2-x-90",
+            "solution": "x\u00b2+(9-10)x-90 = x\u00b2-x-90.",
+            "explanation": "x\u00b2+(9-10)x-90 = x\u00b2-x-90.",
+            "feedback": "Distribute both signs. The constant is negative and the two linear terms combine to -x."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Original School HQ lesson and practice",
+          "origin": "original",
+          "section": "Complete lesson and question shown here"
+        }
+      ],
+      "parent_skill_id": "MAC2311C:expanding-and-factoring",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "derivative-rule-selection",
+      "skill_id": "MAC2311C:derivative-rule-selection:targeted-answer-check",
+      "course": "MAC2311C",
+      "title": "Choose the outer operation first",
+      "order": 12,
+      "prerequisites": [
+        "expanding-and-factoring"
+      ],
+      "teaching": "Before differentiating, name the final operation used to build the expression. Addition splits into separate derivatives. Multiplication of two nonconstant functions calls for the product rule. A function inside another function requires a chain factor.",
+      "worked_example": "For (x\u00b2+1)(x\u00b3-2), the outermost operation is multiplication: product rule first. For (x\u00b2+1)^4, the outermost operation is a power of an inner expression: chain rule.",
+      "cue": "Name the outside operation before moving the pen.",
+      "hint": "The expression is one power applied to an entire inner polynomial.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "For f(x)=(x^2+2)^3, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^3, inner u=x\u00b2+2.",
+            "explanation": "Chain rule: outer u^3, inner u=x\u00b2+2.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "For f(x)=(x^2+3)^4, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^4, inner u=x\u00b2+3.",
+            "explanation": "Chain rule: outer u^4, inner u=x\u00b2+3.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "For f(x)=(x^2+4)^5, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^5, inner u=x\u00b2+4.",
+            "explanation": "Chain rule: outer u^5, inner u=x\u00b2+4.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "For f(x)=(x^2+5)^6, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^6, inner u=x\u00b2+5.",
+            "explanation": "Chain rule: outer u^6, inner u=x\u00b2+5.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "For f(x)=(x^2+6)^7, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^7, inner u=x\u00b2+6.",
+            "explanation": "Chain rule: outer u^7, inner u=x\u00b2+6.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "For f(x)=(x^2+7)^8, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^8, inner u=x\u00b2+7.",
+            "explanation": "Chain rule: outer u^8, inner u=x\u00b2+7.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "For f(x)=(x^2+8)^9, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^9, inner u=x\u00b2+8.",
+            "explanation": "Chain rule: outer u^9, inner u=x\u00b2+8.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "For f(x)=(x^2+9)^10, what rule handles the composition? Enter exactly chain, product, or quotient. On paper identify the outer power and inner polynomial.",
+          "checker": {
+            "type": "tokens",
+            "expected": [
+              "chain",
+              "chain rule"
+            ],
+            "answer_for_test": "chain",
+            "solution": "Chain rule: outer u^10, inner u=x\u00b2+9.",
+            "explanation": "Chain rule: outer u^10, inner u=x\u00b2+9.",
+            "feedback": "A whole expression raised to a power is a composition; include its inner derivative."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Original School HQ lesson and practice",
+          "origin": "original",
+          "section": "Complete lesson and question shown here"
+        }
+      ],
+      "parent_skill_id": "MAC2311C:derivative-rule-selection",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    },
+    {
+      "id": "chain-rule",
+      "skill_id": "MAC2311C:chain-rule:targeted-answer-check",
+      "course": "MAC2311C",
+      "title": "Multiply by the inner derivative",
+      "order": 13,
+      "prerequisites": [
+        "derivative-rule-selection"
+      ],
+      "teaching": "For [u(x)]^k, first differentiate the outside: k[u(x)]^(k-1). Then multiply by u\u2032(x). Keep the inner expression unchanged until taking its own derivative.",
+      "worked_example": "d/dx (3x+1)^2 = 2(3x+1)*3 = 18x+6. The last factor 3 comes from differentiating 3x+1.",
+      "cue": "Outside changes; inside stays; multiply inside\u2019s change.",
+      "hint": "Use 2*(a*x+b)*a. Both occurrences of a matter.",
+      "questions": [
+        {
+          "id": "v1",
+          "prompt": "Differentiate f(x)=(2x+3)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "8*x+12",
+            "answer_for_test": "2*(2*x+3)*2",
+            "solution": "2(2x+3)\u00b72 = 8x+12.",
+            "explanation": "2(2x+3)\u00b72 = 8x+12.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        },
+        {
+          "id": "v2",
+          "prompt": "Differentiate f(x)=(3x+4)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "18*x+24",
+            "answer_for_test": "2*(3*x+4)*3",
+            "solution": "2(3x+4)\u00b73 = 18x+24.",
+            "explanation": "2(3x+4)\u00b73 = 18x+24.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        },
+        {
+          "id": "v3",
+          "prompt": "Differentiate f(x)=(4x+5)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "32*x+40",
+            "answer_for_test": "2*(4*x+5)*4",
+            "solution": "2(4x+5)\u00b74 = 32x+40.",
+            "explanation": "2(4x+5)\u00b74 = 32x+40.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        },
+        {
+          "id": "v4",
+          "prompt": "Differentiate f(x)=(5x+6)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "50*x+60",
+            "answer_for_test": "2*(5*x+6)*5",
+            "solution": "2(5x+6)\u00b75 = 50x+60.",
+            "explanation": "2(5x+6)\u00b75 = 50x+60.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        },
+        {
+          "id": "v5",
+          "prompt": "Differentiate f(x)=(6x+7)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "72*x+84",
+            "answer_for_test": "2*(6*x+7)*6",
+            "solution": "2(6x+7)\u00b76 = 72x+84.",
+            "explanation": "2(6x+7)\u00b76 = 72x+84.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        },
+        {
+          "id": "v6",
+          "prompt": "Differentiate f(x)=(7x+8)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "98*x+112",
+            "answer_for_test": "2*(7*x+8)*7",
+            "solution": "2(7x+8)\u00b77 = 98x+112.",
+            "explanation": "2(7x+8)\u00b77 = 98x+112.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        },
+        {
+          "id": "v7",
+          "prompt": "Differentiate f(x)=(8x+9)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "128*x+144",
+            "answer_for_test": "2*(8*x+9)*8",
+            "solution": "2(8x+9)\u00b78 = 128x+144.",
+            "explanation": "2(8x+9)\u00b78 = 128x+144.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        },
+        {
+          "id": "v8",
+          "prompt": "Differentiate f(x)=(9x+10)^2 on paper. Enter only f\u2032(x), as a polynomial or factored polynomial using * and ^.",
+          "checker": {
+            "type": "polynomial",
+            "expected": "162*x+180",
+            "answer_for_test": "2*(9*x+10)*9",
+            "solution": "2(9x+10)\u00b79 = 162x+180.",
+            "explanation": "2(9x+10)\u00b79 = 162x+180.",
+            "feedback": "The outside factor 2 is not enough; multiply by the inner derivative as well."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "label": "Original School HQ lesson and practice",
+          "origin": "original",
+          "section": "Complete lesson and question shown here"
+        }
+      ],
+      "parent_skill_id": "MAC2311C:chain-rule",
+      "evidence_scope": "Original final-answer checks only; written reasoning and complete programs have not been assessed."
+    }
+  ]
+}
