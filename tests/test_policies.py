@@ -408,11 +408,12 @@ _w=Path(_tf.mkdtemp());_o=_w/'outputs';_O='School'+' HQ'
 (_o/(_O+' App/Bridge')).mkdir(parents=True);(_o/(_O+' Study')).mkdir()
 (_o/(_O+' Study/coaching-state.json')).write_text(json.dumps({'evidence':str(_o/(_O+' Study/a.png'))}))
 _db=_sq.connect(_o/(_O+' App/Bridge/'+'school'+'-hq.sqlite3'));_db.execute('CREATE TABLE documents(path TEXT)');_db.execute('INSERT INTO documents VALUES(?)',(str(_o/(_O+' Study/n.txt')),));_db.commit();_db.close()
-(_o/('school'+'_hq_models.json')).write_text('{"mode":"manual"}')
+(_o/('school'+'_hq_models.json')).write_text('{"mode":"manual"}');(_w/'work'/('school'+'-hq-app/runtime-state')).mkdir(parents=True)
 _r=json.loads(_sp.run([sys.executable,str(root/'genesis_migrate.py'),str(_w)],capture_output=True,text=True).stdout or '{}')
 check('old folders and files take Genesis names',_r.get('migrated') and sorted(p.name for p in _o.iterdir())==['Genesis App','Genesis Study','genesis_models.json'],sorted(p.name for p in _o.iterdir()))
 check('saved paths inside records follow',json.loads((_o/'Genesis Study/coaching-state.json').read_text())['evidence'].endswith('/Genesis Study/a.png'))
 check('the local database follows',_sq.connect(_o/'Genesis App/Bridge/genesis.sqlite3').execute('select path from documents').fetchone()[0].endswith('/Genesis Study/n.txt'))
+check('the AI connection\'s working folder follows',(_w/'work/genesis-app/runtime-state').is_dir() and not (_w/'work'/('school'+'-hq-app')).exists())
 check('model choices survive the upgrade',json.loads((_o/'genesis_models.json').read_text())['mode']=='manual')
 check('a second run changes nothing',json.loads(_sp.run([sys.executable,str(root/'genesis_migrate.py'),str(_w)],capture_output=True,text=True).stdout)=={'migrated':False})
 

@@ -78,6 +78,8 @@ def run(workspace):
             if p.suffix in ('.py', '.swift', '.LICENSE', '.pyc') and target.exists(): p.unlink()   # replaced by the Genesis copy
             else: merge(p, target)   # records, settings, and any program file of your own
             moved.append(name)
+    work = Path(workspace)/'work'
+    if (work/('school'+'-hq-app')).exists(): merge(work/('school'+'-hq-app'), work/'genesis-app'); moved.append('work/'+'school'+'-hq-app')
     if not moved: return {'migrated': False}
     rewritten = 0
     for folder, _, names in os.walk(out):
