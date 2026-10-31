@@ -111,9 +111,7 @@ struct SettingsView: View {
             Section("What Genesis knows about you") {
                 CompanionMemoryList()
             }
-            Section("Companion") {
-                Toggle("A soft sound when Genesis arrives", isOn: Binding(get: { !UserDefaults.standard.bool(forKey: "companionQuiet") }, set: { UserDefaults.standard.set(!$0, forKey: "companionQuiet") }))
-            }
+            CompanionSettings()
             Section("Semester") {
                 Text("When your classes are over, Genesis says goodbye for now: a black window with the orb, waiting until you need it again.").font(.caption).foregroundStyle(.secondary)
                 Button("Say goodbye for now") { model.setFarewell(true) }
@@ -435,4 +433,47 @@ struct CompanionMemoryList: View {
             facts = list.compactMap { f in (f["id"] as? String).map { Fact(id: $0, text: f["text"] as? String ?? "") } }
         }
     }
+}
+
+
+/// The companion is always part of Genesis. You can give it a rest here: for a while, or
+/// until you turn it back on.
+struct CompanionSettings: View {
+    @ObservedObject private var companion = Companion.shared
+    @State private var quiet = UserDefaults.standard.bool(forKey: "companionQuiet")
+
+    var body: some View {
+        Section("Genesis companion") {
+            if companion.paused, let until = companion.pausedUntil {
+                HStack {
+                    Image(systemName: "moon.zzz").foregroundStyle(Theme.secondary)
+                    Text(until > Date().addingTimeInterval(3600 * 24 * 365) ? "Off until you turn it back on"
+                         : "Off until " + until.formatted(Calendar.current.isDateInToday(until) ? .dateTime.hour().minute() : .dateTime.weekday(.wide).hour().minute()))
+                        .font(Typeface.sans(13))
+                    Spacer()
+                    Button("Turn back on") { companion.pause(until: nil) }
+                }
+            } else {
+                HStack {
+                    Text("On. It shows up on its own when you need it, and you can always say not now.").font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
+                    Spacer()
+                    Menu("Turn off…") {
+                        Button("For 1 hour") { companion.pause(until: Date().addingTimeInterval(3600)) }
+                        Button("For 4 hours") { companion.pause(until: Date().addingTimeInterval(4 * 3600)) }
+                        Button("Until tomorrow") { companion.pause(until: Calendar.current.startOfDay(for: Date().addingTimeInterval(86400)).addingTimeInterval(6 * 3600)) }
+                        Button("For a week") { companion.pause(until: Date().addingTimeInterval(7 * 86400)) }
+                        Divider()
+                        Button("Until I turn it back on") { companion.pause(until: .distantFuture) }
+                    }
+                    .fixedSize()
+                }
+            }
+            Toggle("A soft sound when Genesis arrives", isOn: $quiet.inverted)
+                .onChange(of: quiet) { _, v in UserDefaults.standard.set(v, forKey: "companionQuiet") }
+        }
+    }
+}
+
+private extension Binding where Value == Bool {
+    var inverted: Binding<Bool> { Binding(get: { !wrappedValue }, set: { wrappedValue = !$0 }) }
 }

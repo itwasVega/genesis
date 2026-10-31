@@ -18,6 +18,7 @@ __pycache__/
 ._*
 # Never commit personal study data, accounts or secrets
 School HQ Study/
+!tests/fixtures/School HQ Study/
 School HQ App/Bridge/
 Canvas School Source/
 connections.json

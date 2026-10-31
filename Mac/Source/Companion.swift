@@ -106,6 +106,15 @@ final class Companion: ObservableObject {
     private var idleWork: DispatchWorkItem?
     private var lastCheckIn = UserDefaults.standard.object(forKey: "companionLastCheckIn") as? Date ?? .distantPast
     private var lastPicked: [String: String] = [:]
+    /// Settings › Genesis companion: off for a while, or until you turn it back on. It's on by default.
+    @Published var pausedUntil: Date? = UserDefaults.standard.object(forKey: "companionPausedUntil") as? Date
+    var paused: Bool { (pausedUntil ?? .distantPast) > Date() }
+    func pause(until date: Date?) {
+        pausedUntil = date
+        if let date { UserDefaults.standard.set(date, forKey: "companionPausedUntil") } else { UserDefaults.standard.removeObject(forKey: "companionPausedUntil") }
+        if paused { hideWork?.cancel(); idleWork?.cancel(); flyOut() }
+        objectWillChange.send()
+    }
     @Published var choiceYes = "yeah"
     @Published var choiceNo = "not rn"
 
@@ -167,7 +176,7 @@ final class Companion: ObservableObject {
     // MARK: Showing and hiding
 
     func show(_ line: CompanionLine, glow: Bool = false, linger: TimeInterval = 14, bringForward: Bool = false) {
-        guard let model, !model.farewell else { return }
+        guard let model, !model.farewell, !paused else { return }
         reply = nil; replyAction = nil; question = ""; farewellLine = nil
         // A fresh appearance asks first; a follow-up while you're already talking doesn't.
         if !visible { engaged = false }
@@ -531,7 +540,7 @@ final class Companion: ObservableObject {
     @Published var flyScale: CGFloat = 1
     @Published var speakID = 0          // the orb stirs as its words appear, and as you type
     /// While you're working, a small orb rests in the corner, breathing: it never leaves you.
-    var resting: Bool { model?.openTask != nil && !(model?.farewell ?? false) }
+    var resting: Bool { model?.openTask != nil && !(model?.farewell ?? false) && !paused }
     @Published var leaving = false
     private var visible: Bool { present && !leaving }
 

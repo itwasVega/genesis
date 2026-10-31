@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0 (46) — October 31, 2026
+## 1.0 (47) — October 31, 2026
 
 First public beta.
 
@@ -10,6 +10,7 @@ First public beta.
 - **Companion faces.** The orb's light gathers into a face (happy, playful, curious, empathetic, sad, thinking, listening, proud) that follows what's being said.
 - **A companion that feels alive.** A different entrance every time, small unpredictable movements while it's with you, a soft arrival sound you can turn off, and lines that don't repeat.
 - **Two-choice openers.** Every appearance starts with "talk" or "not now". No close button; it takes no for an answer.
+- **Quiet time.** The companion is on by default. In Settings you can turn it off for an hour, 4 hours, until tomorrow, a week, or until you turn it back on.
 - **Check-ins.** Now and then, the companion drops by just to check on you. You lead the conversation, and it lasts as long as you want.
 - Your own classes and your own Codex account, set up in Settings.
 - A bundled Python runtime and a native PDF and OCR helper (PDFKit and Vision).

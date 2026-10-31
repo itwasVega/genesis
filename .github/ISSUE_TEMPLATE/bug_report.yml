@@ -28,7 +28,7 @@ body:
     attributes:
       label: Genesis build
       description: Genesis › About Genesis
-      placeholder: 1.0 (46)
+      placeholder: 1.0 (47)
     validations:
       required: true
   - type: input
