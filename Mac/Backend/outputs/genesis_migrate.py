@@ -74,10 +74,9 @@ def run(workspace):
         name = p.name
         if name.startswith('.'+OLD_CODE): merge(p, out/('.genesis_'+name[len(OLD_CODE)+1:])); moved.append(name)
         elif name.startswith(OLD_CODE):
-            if p.suffix in ('.py', '.swift', '.LICENSE') or name.endswith('.pyc'):
-                # Old program files: the Genesis copies replace them.
-                if (out/('genesis_'+name[len(OLD_CODE):])).exists(): p.unlink()
-            else: merge(p, out/('genesis_'+name[len(OLD_CODE):]))
+            target = out/('genesis_'+name[len(OLD_CODE):])
+            if p.suffix in ('.py', '.swift', '.LICENSE', '.pyc') and target.exists(): p.unlink()   # replaced by the Genesis copy
+            else: merge(p, target)   # records, settings, and any program file of your own
             moved.append(name)
     if not moved: return {'migrated': False}
     rewritten = 0

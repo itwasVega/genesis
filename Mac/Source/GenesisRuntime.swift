@@ -84,6 +84,13 @@ enum GenesisRuntime {
             let data = try Data(contentsOf: file)
             if (try? Data(contentsOf: target)) != data { try data.write(to: target, options: .atomic) }
         }
+        // Old program files the Genesis copies just replaced (left by an upgrade from the old name).
+        let out = root.appendingPathComponent("outputs")
+        for name in (try? fm.contentsOfDirectory(atPath: out.path)) ?? [] where name.hasPrefix(Upgrade.oldCode) && (name.hasSuffix(".py") || name.hasSuffix(".swift")) {
+            if fm.fileExists(atPath: out.appendingPathComponent("genesis_" + name.dropFirst(Upgrade.oldCode.count)).path) {
+                try? fm.removeItem(at: out.appendingPathComponent(name))
+            }
+        }
         for folder in ["outputs/Genesis App/Bridge", "outputs/Genesis Study", "work", "tmp"] {
             let directory = root.appendingPathComponent(folder)
             try rejectLinks(directory)
