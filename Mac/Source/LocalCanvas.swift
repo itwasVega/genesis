@@ -36,7 +36,7 @@ import PDFKit
   let end=Date().addingTimeInterval(28);var previous="";var stable=0
   while Date()<end {
    try Task.checkCancellation()
-   if let d=try? Data(contentsOf:URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge/state.json")),let v=try? JSONSerialization.jsonObject(with:d) as? [String:Any],let r=v["request"] as? [String:Any],r["id"] as? String != ident || r["status"] as? String != "processing"{web.stopLoading();throw issue("Sync cancelled or replaced.")}
+   if let d=try? Data(contentsOf:URL(fileURLWithPath:root+"/outputs/Genesis App/Bridge/state.json")),let v=try? JSONSerialization.jsonObject(with:d) as? [String:Any],let r=v["request"] as? [String:Any],r["id"] as? String != ident || r["status"] as? String != "processing"{web.stopLoading();throw issue("Sync cancelled or replaced.")}
    if !web.isLoading,let location=web.url {
     if location.host != host || location.path.contains("/login"){try await Task.sleep(nanoseconds:250_000_000);continue}
     if kind=="detail",location.path != url.path{throw issue("Assignment redirected to another page; assessment content was not opened or started.")}
@@ -104,7 +104,7 @@ import PDFKit
     let value=try await web.callAsyncJavaScript(script,arguments:[:],in:nil,contentWorld:.page)
     guard let raw=value as? String,let data=raw.data(using:.utf8),var result=try JSONSerialization.jsonObject(with:data) as? [String:Any]else{throw issue("Session diagnostic returned invalid data.")}
     result["tested_at"]=capturedTime();result["diagnostic_only"]=true;result["readiness_changed"]=false
-    let bridge=URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge")
+    let bridge=URL(fileURLWithPath:root+"/outputs/Genesis App/Bridge")
     if let stateData=try? Data(contentsOf:bridge.appendingPathComponent("state.json")),let state=try? JSONSerialization.jsonObject(with:stateData) as? [String:Any],let request=state["request"] as? [String:Any],let ident=request["id"] as? String,let captureData=try? Data(contentsOf:bridge.appendingPathComponent("LocalCanvas/"+ident+"-result.json")),let capture=try? JSONSerialization.jsonObject(with:captureData) as? [String:Any],let rows=capture["captures"] as? [[String:Any]],let row=rows.first(where:{$0["course"] as? String==selected.id && $0["kind"] as? String=="assignments"}),let links=row["links"] as? [[String:String]]{
      let pageIDs=Set(links.compactMap{item->String? in guard let u=URL(string:item["source"] ?? ""),u.path.range(of:"^/courses/\(selected.canvas_id)/assignments/[0-9]+$",options:.regularExpression) != nil else{return nil};return u.lastPathComponent})
      let apiIDs=Set((result["assignments"] as? [[String:Any]] ?? []).compactMap{$0["id"] as? String})
@@ -118,7 +118,7 @@ import PDFKit
   }
  }
  func check(root:String,ident:String){
-  guard !working,!sessionTesting,runningID != ident else{return};let folder=URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge/LocalCanvas")
+  guard !working,!sessionTesting,runningID != ident else{return};let folder=URL(fileURLWithPath:root+"/outputs/Genesis App/Bridge/LocalCanvas")
   guard let data=try? Data(contentsOf:folder.appendingPathComponent(ident+"-request.json")),let request=try? JSONSerialization.jsonObject(with:data) as? [String:Any],request["request_id"] as? String==ident else{return}
   working=true;runningID=ident
   Task {
@@ -220,13 +220,13 @@ import PDFKit
  }
 
  func ensureActive(_ root:String,_ ident:String)throws {
-  let data=try Data(contentsOf:URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge/state.json"));let v=try JSONSerialization.jsonObject(with:data) as? [String:Any];let r=v?["request"] as? [String:Any]
+  let data=try Data(contentsOf:URL(fileURLWithPath:root+"/outputs/Genesis App/Bridge/state.json"));let v=try JSONSerialization.jsonObject(with:data) as? [String:Any];let r=v?["request"] as? [String:Any]
   if r?["id"] as? String != ident || r?["status"] as? String != "processing" {throw issue("Sync cancelled or replaced")}
  }
  func downloadResource(_ resource:[String:Any],root:String,ident:String)async throws->[String:Any]{
   let course=resource["course"] as? String ?? "",id=resource["id"] as? String ?? "",name=resource["name"] as? String ?? "file",size=(resource["size"] as? NSNumber)?.intValue ?? 0
   guard size>0,size<=80*1024*1024,let url=URL(string:resource["download"] as? String ?? ""),url.host==host,url.path=="/files/"+id+"/download" else{throw issue("File size/destination outside approved download bounds")}
-  let base=URL(fileURLWithPath:root+"/outputs/School HQ App/Bridge"),indexURL=base.appendingPathComponent("canvas-material-cache-v2.json")
+  let base=URL(fileURLWithPath:root+"/outputs/Genesis App/Bridge"),indexURL=base.appendingPathComponent("canvas-material-cache-v2.json")
   var index=((try? Data(contentsOf:indexURL)).flatMap{try? JSONSerialization.jsonObject(with:$0) as? [String:[String:Any]]}) ?? [:]
   if index[id]==nil,let legacy=index[course+"|"+id],let p=legacy["path"] as? String,let raw=try? Data(contentsOf:URL(fileURLWithPath:p)),raw.count==size {var adopted=legacy;adopted["sha256"]=SHA256.hash(data:raw).map{String(format:"%02x",$0)}.joined();index[id]=adopted;index.removeValue(forKey:course+"|"+id);try JSONSerialization.data(withJSONObject:index,options:[.prettyPrinted,.sortedKeys]).write(to:indexURL,options:.atomic)}
   let key=id,version=String(describing:resource["updated_at"] ?? "")+"|"+String(size)

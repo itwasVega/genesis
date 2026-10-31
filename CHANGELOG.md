@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0 (53) — October 31, 2026
+
+### Changed
+- **Genesis, everywhere.** The last traces of the app's working name are gone: every file, folder, setting and Keychain entry now carries the Genesis name, and the Mac app's identifier is `com.xander.genesis`.
+- **Upgrading keeps everything.** The first launch of this build quietly carries over your settings, your Canvas sign-in, your saved Canvas calendar, your records and your study history. Two things may ask once: macOS may ask again to allow notifications, and it may ask whether Genesis can use a saved Keychain item (choose Always Allow).
+
 ## 1.0 (52) — October 31, 2026
 
 ### Added

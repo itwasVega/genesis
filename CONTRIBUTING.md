@@ -29,7 +29,7 @@ Thanks for helping. Genesis is a small project, so a clear bug report is often a
 - **Local first.** Study records stay on the student's Mac. Don't add servers, analytics or telemetry.
 - **No shipped credentials or personal data.** No API keys, accounts, course IDs, real student work or private files in the repo, tests or fixtures.
 - **Honest learning signals.** Don't count something as mastered unless the student showed it. Hints, partial answers and same-day repairs are tracked separately on purpose.
-- **The companion is a friend, not an assistant.** It starts conversations without asking questions, lets the student lead, takes "not now" well, never gives answers away when helping, and is always truthful that it's an AI. Read `Mac/Backend/outputs/school_hq_persona.py` before changing its voice.
+- **The companion is a friend, not an assistant.** It starts conversations without asking questions, lets the student lead, takes "not now" well, never gives answers away when helping, and is always truthful that it's an AI. Read `Mac/Backend/outputs/genesis_persona.py` before changing its voice.
 - Swift: SwiftUI, macOS 15 APIs, no third-party packages. Python: standard library first; vendored packages live in `Mac/Backend/outputs/vendor` with their licenses.
 - Match the surrounding style. Comments explain *why*.
 

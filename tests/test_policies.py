@@ -10,8 +10,8 @@ NS={'__name__':'fixture','__file__':str(HERE/'test_engine.py')};exec(compile(src
 root=NS['setup']();FakeClient=NS['FakeClient']
 sys.path.insert(0,str(root));os.chdir(root)
 for m in list(sys.modules):
- if m.startswith('school_hq'):del sys.modules[m]
-import school_hq_engine as E,school_hq_coaching as C,school_hq_context as X,school_hq_planning as PL,school_hq_grader as G
+ if m.startswith('genesis'):del sys.modules[m]
+import genesis_engine as E,genesis_coaching as C,genesis_context as X,genesis_planning as PL,genesis_grader as G
 T=E.today();fails=[];passed=[0]
 def check(name,cond,detail=''):
  if cond:passed[0]+=1
@@ -88,7 +88,7 @@ lost=[o['name'] for o in overflow if not o['topics'] or any(t.get('plan') not in
 check('20 assignments due tomorrow: each is planned or explicitly deferred',not lost,lost)
 check('over-capacity work is listed with a reason',any('full' in d['reason'] for d in plan['deferred']),plan['deferred'][:3])
 # limit set by the user is honored, and still never cuts work due within three days
-prof=root/'School HQ Study/study-profile.json';prof.write_text(json.dumps({'daily_minutes':60}))
+prof=root/'Genesis Study/study-profile.json';prof.write_text(json.dumps({'daily_minutes':60}))
 ev['COP3502C']=[('Assignment 1',1,False)]
 plan2=E.make_plan('fixture-2',T)
 check('a daily limit you set is honored',plan2['daily_limit_minutes']==60 and any('60-minute' in d['reason'] for d in plan2['deferred']),plan2['deferred'][:2])
@@ -111,8 +111,8 @@ sl=[x for x in plan3['slots'] if not x['context_addition']]
 s6=C.load(root)
 for i,x in enumerate(sl):s6['attempts'].append({'submission_id':'done-%d'%i,'exercise_id':x['course']+':t:'+x['key']+':abc123','outcome':'correct','feedback':'ok','attempt_date':T.isoformat(),'independent':True})
 C.persist(s6,root)
-st6=json.loads((root/'School HQ App/Bridge/state.json').read_text());st6['brief']={'id':'b6','date':T.isoformat(),'tasks':[{'exercise_id':x['course']+':t:'+x['key']+':abc123'} for x in sl]}
-(root/'School HQ App/Bridge/state.json').write_text(json.dumps(st6))
+st6=json.loads((root/'Genesis App/Bridge/state.json').read_text());st6['brief']={'id':'b6','date':T.isoformat(),'tasks':[{'exercise_id':x['course']+':t:'+x['key']+':abc123'} for x in sl]}
+(root/'Genesis App/Bridge/state.json').write_text(json.dumps(st6))
 plan5=E.make_plan('fixture-5',T)
 check('finished today is detected',plan5['pulled_ahead'])
 check('a re-plan never repeats a task already done today',not ({x['key'] for x in sl}&{x['key'] for x in plan5['slots']}),[x['skill_name'] for x in plan5['slots']])
@@ -135,10 +135,10 @@ class RejectRetry(FakeClient):
   if 'Now compare' in prompt and 'sumList' in prompt:
    m=re.search(r'(?:nothing else|to): (/\S+\.json)',prompt);Path(m[1]).write_text(json.dumps({'agrees':False,'reference_correct':False,'issues':['reference sums wrong field'],'leak':False,'summary':'wrong'}));return
   return FakeClient.turn(self,prompt,model,effort,timeout,check)
-st=json.loads((root/'School HQ App/Bridge/state.json').read_text())
+st=json.loads((root/'Genesis App/Bridge/state.json').read_text())
 task={'exercise_id':'COP3502C:fixture:abc','course':'CS1','course_id':'COP3502C','question':'Write byeList','prompt_blocks':[{'kind':'paragraph','text':'Write byeList'}],'answer_type':'code','skill_ids':['COP3502C:recursion']}
-st['brief']={'id':'req-9','tasks':[task]};(root/'School HQ App/Bridge/state.json').write_text(json.dumps(st))
-(root/'School HQ App/Bridge/Packets/req-9').mkdir(parents=True,exist_ok=True);(root/'School HQ App/Bridge/Packets/req-9/rubrics.json').write_text(json.dumps({task['exercise_id']:{'solution':'void byeList(node*h){if(!h)return;byeList(h->next);free(h);}','rubric':'recurse first'}}))
+st['brief']={'id':'req-9','tasks':[task]};(root/'Genesis App/Bridge/state.json').write_text(json.dumps(st))
+(root/'Genesis App/Bridge/Packets/req-9').mkdir(parents=True,exist_ok=True);(root/'Genesis App/Bridge/Packets/req-9/rubrics.json').write_text(json.dumps({task['exercise_id']:{'solution':'void byeList(node*h){if(!h)return;byeList(h->next);free(h);}','rubric':'recurse first'}}))
 s=C.load(root)
 if not any(x['id']=='COP3502C:recursion' for x in s['skills']):s['skills'].append({'id':'COP3502C:recursion','course':'COP3502C','name':'Recursion','status':'untested','evidence':[],'successes':0})
 C.persist(s,root)
@@ -154,7 +154,7 @@ class Unreadable(FakeClient):
   return FakeClient.turn(self,prompt,model,effort,timeout,check)
 n_before=len(C.load(root)['attempts'])
 out=G.submit({'brief_id':'req-9','exercise_id':task['exercise_id'],'answer':'1/2x','attempt_id':'uu11vv22ww33'},client_factory=lambda:Unreadable)
-ev_file=json.loads((root/'School HQ App/Bridge/Evidence/uu11vv22ww33.json').read_text())
+ev_file=json.loads((root/'Genesis App/Bridge/Evidence/uu11vv22ww33.json').read_text())
 check('unreadable: no grade, attempt kept, specific reason',out.get('unreadable') and len(C.load(root)['attempts'])==n_before and ev_file['status']=='unreadable' and 'Line 3' in out['unreadable']['reason'])
 
 # ---------- 10. rapid-fire phone sessions ----------
@@ -195,7 +195,7 @@ check('the scope you sent is used for that test',E.reported_scope('MAC2311C',{'n
 check('and not for a different test',E.reported_scope('MAC2311C',{'name':'Test 4'},X.active())==[])
 
 # ---------- 11. companion ----------
-import school_hq_companion as K
+import genesis_companion as K
 s=fresh();d1=T-timedelta(days=3)
 grade(s,'incorrect',d1);before=dict(sk(s));grade(s,'correct',d1+timedelta(days=1))
 check('remark: a topic you used to miss, now alone',"used to" not in '' and 'got you last time' in K.remark(s,'e1','correct',before,d1+timedelta(days=1)))
@@ -263,7 +263,7 @@ K.forget('all')
 check('everything can be deleted',K.memory()=={'facts':[],'said':[],'chats':0})
 
 # ---------- 13. the character from the personality spec ----------
-import school_hq_persona as P
+import genesis_persona as P
 src=Path(P.__file__).read_text()
 check('persona: no real contact names or private messages in the app',not re.search(r'\b(Gen|Mara|Olivia|Jeremy|Eliany|Carlos)\b',src))
 check('persona: honest about being an AI, no invented promises','AI' in P.CHARACTER and "can't call" in P.CHARACTER and 'forever' in P.CHARACTER)
@@ -319,8 +319,8 @@ check('later replies may ask, when it follows from what they said',r['reply'].en
 K.forget('all')
 
 # ---------- any school: nothing tied to one school's Canvas, email or time zone ----------
-import school_hq_connections as CN
-_cf=root/'School HQ Study/connections.json';_saved=_cf.read_text()
+import genesis_connections as CN
+_cf=root/'Genesis Study/connections.json';_saved=_cf.read_text()
 _v=json.loads(_saved);_v['canvas_host']='canvas.state.edu';_v['school_email']='me@student.state.edu';_v['timezone']='America/Denver';_cf.write_text(json.dumps(_v))
 check('Canvas host comes from setup',CN.canvas_host()=='canvas.state.edu' and CN.canvas_origin()=='https://canvas.state.edu')
 check('school email domain comes from the student',CN.school_domain()=='student.state.edu')
@@ -333,7 +333,7 @@ check('notes find classes by code (any spacing), name and everyday words',re.sea
 _cf.write_text(_saved)
 
 # ---------- the scout: public course material from the school's own site, nothing else ----------
-import school_hq_scout as S,school_hq_ai as AI,school_hq_library as LIB
+import genesis_scout as S,genesis_ai as AI,genesis_library as LIB
 check('the whole school site, from an email or Canvas host',S.registrable('knights.state.edu')=='state.edu' and S.registrable('canvas.cs.ox.ac.uk')=='ox.ac.uk')
 check('school pages are allowed, on any of its subdomains',S.allowed('https://www.cs.state.edu/~prof/cop3502/exam2.pdf','state.edu') and S.allowed('http://state.edu/x.pdf','state.edu'))
 check('other sites are not',not S.allowed('https://notstate.edu/x.pdf','state.edu') and not S.allowed('https://state.edu.evil.com/x.pdf','state.edu'))
@@ -359,7 +359,7 @@ class _Web:
   u=req.full_url;s.fetched.append(u)
   if u not in s.pages:raise ValueError('404')
   return _Resp(u,*s.pages[u])
-_cf=root/'School HQ Study/connections.json';_saved=_cf.read_text()
+_cf=root/'Genesis Study/connections.json';_saved=_cf.read_text()
 _v=json.loads(_saved);_v['canvas_host']='canvas.state.edu';_v['school_email']='me@knights.state.edu';_cf.write_text(json.dumps(_v))
 _real=S.discover
 S.discover=lambda c,sch,ex,**k:{'items':[{'url':'https://cs.state.edu/cop3502/exams.html','title':'Exam page','kind':'course_site','term':'Fall 2024','instructor':'Dr. Lee','exam':''},
@@ -370,8 +370,8 @@ _urls={m['url'] for m in _rec['materials']}
 check('a listing page leads to its exam PDFs on the same site',{'https://cs.state.edu/cop3502/exam2-f24.pdf','https://cs.state.edu/cop3502/exam2-f24-key.pdf'}<=_urls,_urls)
 check('answer leaks and homework solutions are never fetched',not any('coursehero' in u or 'chegg' in u or 'hw3' in u for u in _Web.fetched),_Web.fetched)
 check('found exams are labelled as exams and keys',{m['category'] for m in _rec['materials'] if m['url'].endswith('.pdf')}=={'exam_questions','exam_solutions'})
-check('the record is saved where the library looks',(root/'School HQ App/Bridge/Courses/COP3502C/scout-current.json').read_bytes()==(root/'School HQ App/Bridge/Runs/scout-test/COP3502C-scout-record.json').read_bytes())
-check('the library lists them as found online',{m['url'] for c,m,w in LIB.found_materials(root,root/'School HQ App/Bridge')}==_urls)
+check('the record is saved where the library looks',(root/'Genesis App/Bridge/Courses/COP3502C/scout-current.json').read_bytes()==(root/'Genesis App/Bridge/Runs/scout-test/COP3502C-scout-record.json').read_bytes())
+check('the library lists them as found online',{m['url'] for c,m,w in LIB.found_materials(root,root/'Genesis App/Bridge')}==_urls)
 check('terms are read from file names',S.term_of('Exam2-fall25.pdf')[1]=='Fall 2025' and S.term_of('Exam1-Spr16.pdf')[1]=='Spring 2016' and S.term_of('final_2023.pdf')[1]=='2023' and S.term_of('notes.pdf')[1]=='')
 _links=S.file_links('https://cs.state.edu/c/',['Exam1-Fall13.pdf','Exam1-fall25.pdf','Exam1-fall25-key.pdf','Exam2-Spr24.pdf'],'state.edu','COP3502C')
 check('newest exams come first, each next to its key',[x['title'] for x in _links]==['Exam1-fall25.pdf','Exam1-fall25-key.pdf','Exam2-Spr24.pdf','Exam1-Fall13.pdf'],[x['title'] for x in _links])
@@ -394,13 +394,27 @@ check('Auto checks them with a different strong model',AI.auto_route('verify',_m
 check('Auto uses the quick model for small jobs',AI.auto_route('context',_models)==('big-1-mini','low') and AI.auto_route('catalog',_models)==('big-1-mini','medium'))
 check('Auto never asks a model for an effort it lacks',AI.fit_effort(_models[1],'high')=='medium')
 check('Auto with one model: verification is a separate session of it',AI.auto_route('verify',_models[:1])==('big-1','high'))
-_mf=root/'school_hq_models.json';_ms=_mf.read_text() if _mf.exists() else None
+_mf=root/'genesis_models.json';_ms=_mf.read_text() if _mf.exists() else None
 _mf.write_text(json.dumps({'mode':'manual','jobs':{'generate':{'model':'mine','effort':'max'}}}))
 check('Manual uses exactly what was chosen',AI.route('generate')==('mine','max') and AI.mode()=='manual')
 _mf.write_text(json.dumps({'jobs':{'generate':{'model':'mine','effort':'max'}}}))
 check('no mode set means Auto',AI.mode()=='auto')
 if _ms is None:_mf.unlink()
 else:_mf.write_text(_ms)
+
+# ---------- upgrading from the old name: folders, files, saved paths and the database ----------
+import subprocess as _sp,sqlite3 as _sq,tempfile as _tf
+_w=Path(_tf.mkdtemp());_o=_w/'outputs';_O='School'+' HQ'
+(_o/(_O+' App/Bridge')).mkdir(parents=True);(_o/(_O+' Study')).mkdir()
+(_o/(_O+' Study/coaching-state.json')).write_text(json.dumps({'evidence':str(_o/(_O+' Study/a.png'))}))
+_db=_sq.connect(_o/(_O+' App/Bridge/'+'school'+'-hq.sqlite3'));_db.execute('CREATE TABLE documents(path TEXT)');_db.execute('INSERT INTO documents VALUES(?)',(str(_o/(_O+' Study/n.txt')),));_db.commit();_db.close()
+(_o/('school'+'_hq_models.json')).write_text('{"mode":"manual"}')
+_r=json.loads(_sp.run([sys.executable,str(root/'genesis_migrate.py'),str(_w)],capture_output=True,text=True).stdout or '{}')
+check('old folders and files take Genesis names',_r.get('migrated') and sorted(p.name for p in _o.iterdir())==['Genesis App','Genesis Study','genesis_models.json'],sorted(p.name for p in _o.iterdir()))
+check('saved paths inside records follow',json.loads((_o/'Genesis Study/coaching-state.json').read_text())['evidence'].endswith('/Genesis Study/a.png'))
+check('the local database follows',_sq.connect(_o/'Genesis App/Bridge/genesis.sqlite3').execute('select path from documents').fetchone()[0].endswith('/Genesis Study/n.txt'))
+check('model choices survive the upgrade',json.loads((_o/'genesis_models.json').read_text())['mode']=='manual')
+check('a second run changes nothing',json.loads(_sp.run([sys.executable,str(root/'genesis_migrate.py'),str(_w)],capture_output=True,text=True).stdout)=={'migrated':False})
 
 print('passed',passed[0],'failed',len(fails))
 for f in fails:print('FAIL',f)

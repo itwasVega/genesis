@@ -71,7 +71,7 @@ struct GenesisConfiguration: Codable {
     }
 
     static func url(root: String) -> URL {
-        URL(fileURLWithPath: root).appendingPathComponent("outputs/School HQ Study/connections.json")
+        URL(fileURLWithPath: root).appendingPathComponent("outputs/Genesis Study/connections.json")
     }
     static func load(root: String) throws -> Self {
         let file = url(root: root)

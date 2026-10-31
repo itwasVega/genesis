@@ -74,7 +74,7 @@ final class SetupFlow: ObservableObject {
             var c = (try? GenesisConfiguration.load(root: model.workspace)) ?? GenesisConfiguration()
             c.codex_path = path
             try? c.save(root: model.workspace)
-            model.runScript("school_hq_ai_setup.py", ["check"]) { [self] data in
+            model.runScript("genesis_ai_setup.py", ["check"]) { [self] data in
                 let v = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
                 withAnimation(.easeOut(duration: 0.3)) {
                     if v["ok"] as? Bool == true { brain = .ready }
@@ -206,7 +206,7 @@ final class SetupFlow: ObservableObject {
     /// only live on the calendar never slip by. Nothing to copy or paste.
     func grabCalendar() async {
         guard let model, let canvas, let feed = await canvas.calendarFeed(), let url = URL(string: feed), url.host == host else { return }
-        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "SchoolHQ.CanvasCalendar.v1", kSecAttrAccount as String: "private-feed"]
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "Genesis.CanvasCalendar.v1", kSecAttrAccount as String: "private-feed"]
         SecItemDelete(query as CFDictionary)
         var item = query; item[kSecValueData as String] = Data(feed.utf8); item[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else { return }
@@ -252,12 +252,12 @@ final class SetupFlow: ObservableObject {
         guard address.contains("@"), !mailPassword.isEmpty else { mail = .problem("I need your full school email and the app password."); return }
         mail = .checking
         guard MailKeychain.store(account: address, password: mailPassword) else { mail = .problem("your Mac's Keychain didn't let me save it."); return }
-        let url = model.outputs.appendingPathComponent("School HQ Study/mail.json")
+        let url = model.outputs.appendingPathComponent("Genesis Study/mail.json")
         let config: [String: Any] = ["enabled": true, "provider": mailProvider.rawValue, "email": address, "host": mailProvider.host, "port": 993]
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? JSONSerialization.data(withJSONObject: config, options: .prettyPrinted).write(to: url, options: .atomic)
         mailPassword = ""
-        model.runScript("school_hq_mail.py", ["test"]) { [self] data in
+        model.runScript("genesis_mail.py", ["test"]) { [self] data in
             let v = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
             if v?["ok"] as? Bool == true {
                 var c = (try? GenesisConfiguration.load(root: model.workspace)) ?? GenesisConfiguration()

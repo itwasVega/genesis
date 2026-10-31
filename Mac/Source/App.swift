@@ -2,10 +2,10 @@ import SwiftUI
 import AppKit
 
 @main
-struct SchoolHQApp: App {
+struct GenesisMacApp: App {
     @StateObject private var model = AppModel()
 
-    init() { _ = Typeface.registered; CrashLog.install() }
+    init() { Upgrade.identity(); _ = Typeface.registered; CrashLog.install() }
 
     var body: some Scene {
         WindowGroup {
@@ -257,7 +257,7 @@ enum CrashLog {
     static func install() {
         if ProcessInfo.processInfo.environment["GENESIS_TEST_WORKSPACE"] != nil { return }
         let bundled = Bundle.main.url(forResource: "workspace", withExtension: "txt").flatMap { try? String(contentsOf: $0, encoding: .utf8) }?.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let ws = UserDefaults.standard.string(forKey: "schoolHQWorkspace") ?? bundled, !ws.isEmpty else { return }
+        guard let ws = UserDefaults.standard.string(forKey: "genesisWorkspace") ?? bundled, !ws.isEmpty else { return }
         try? FileManager.default.createDirectory(atPath: ws + "/tmp", withIntermediateDirectories: true)
         fd = open(ws + "/tmp/crash.log", O_WRONLY | O_CREAT | O_APPEND, 0o644)
         guard fd >= 0 else { return }

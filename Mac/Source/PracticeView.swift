@@ -157,7 +157,7 @@ struct PracticeView: View {
     func act(_ action: String, _ payload: [String: Any]? = nil, reloadOnly: Bool = false) {
         busy = true; error = ""
         let data = payload.flatMap { try? JSONSerialization.data(withJSONObject: $0) }
-        model.runScript("school_hq_learning.py", [action], stdin: data) { out in
+        model.runScript("genesis_learning.py", [action], stdin: data) { out in
             busy = false
             guard let out, let s = try? JSONDecoder().decode(PracticeState.self, from: out) else {
                 error = "Practice could not load. Your answers are saved."; return

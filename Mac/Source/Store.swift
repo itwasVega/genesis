@@ -343,7 +343,7 @@ final class AppModel: ObservableObject {
     private var loadedOnce = false
     private var scoped: URL?
 
-    var bridge: URL { URL(fileURLWithPath: workspace).appendingPathComponent("outputs/School HQ App/Bridge") }
+    var bridge: URL { URL(fileURLWithPath: workspace).appendingPathComponent("outputs/Genesis App/Bridge") }
     var outputs: URL { URL(fileURLWithPath: workspace).appendingPathComponent("outputs") }
     var brief: Brief? { state?.brief }
     var tasks: [StudyTask] { brief?.tasks.sorted { $0.number < $1.number } ?? [] }
@@ -352,8 +352,8 @@ final class AppModel: ObservableObject {
 
     init() {
         let bundled = Bundle.main.url(forResource: "workspace", withExtension: "txt").flatMap { try? String(contentsOf: $0, encoding: .utf8) }?.trimmingCharacters(in: .whitespacesAndNewlines)
-        workspace = UserDefaults.standard.string(forKey: "schoolHQWorkspace") ?? bundled ?? ""
-        if let bookmark = UserDefaults.standard.data(forKey: "schoolHQBookmark") {
+        workspace = UserDefaults.standard.string(forKey: "genesisWorkspace") ?? bundled ?? ""
+        if let bookmark = UserDefaults.standard.data(forKey: "genesisBookmark") {
             var stale = false
             if let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale) {
                 scoped = url; _ = url.startAccessingSecurityScopedResource(); workspace = url.path
@@ -361,13 +361,13 @@ final class AppModel: ObservableObject {
         }
         do { workspace = try GenesisRuntime.prepare(preferred: workspace).path }
         catch { message = "Genesis could not prepare its local storage: \(error.localizedDescription)" }
-        connected = GenesisRuntime.python != nil && !workspace.isEmpty && FileManager.default.fileExists(atPath: workspace + "/outputs/school_hq_app_bridge.py")
+        connected = GenesisRuntime.python != nil && !workspace.isEmpty && FileManager.default.fileExists(atPath: workspace + "/outputs/genesis_app_bridge.py")
         if GenesisRuntime.python == nil { message = "This build is missing its Python runtime. Install a complete Genesis release." }
         if let data = UserDefaults.standard.dictionary(forKey: "drafts") as? [String: String] { drafts = data }
         if let data = UserDefaults.standard.dictionary(forKey: "answerPages") as? [String: [String]] {
             attachments = data.mapValues { $0.filter { FileManager.default.fileExists(atPath: $0) } }.filter { !$0.value.isEmpty }
         }
-        if connected { reload(); refreshNotes(); runScript("school_hq_engine.py", ["overview"]) { _ in self.reload() } }
+        if connected { reload(); refreshNotes(); runScript("genesis_engine.py", ["overview"]) { _ in self.reload() } }
         timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in Task { @MainActor in self?.reload() } }
         // Notes typed in the Genesis iPhone app arrive through iCloud Drive/Genesis/Notes.
         if connected { importPhoneNotes() }
@@ -381,7 +381,7 @@ final class AppModel: ObservableObject {
     /// newer ~/Library/CloudStorage/iCloudDrive-* layout.
     var iCloudRoot: URL? {
         let fm = FileManager.default, home = fm.homeDirectoryForCurrentUser
-        let config = outputs.appendingPathComponent("School HQ Study/phone-inbox.json")
+        let config = outputs.appendingPathComponent("Genesis Study/phone-inbox.json")
         if let data = try? Data(contentsOf: config), let v = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let path = v["icloud_root"] as? String { return URL(fileURLWithPath: path) }
         let classic = home.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs")
         if fm.fileExists(atPath: classic.path) { return classic }
@@ -430,7 +430,7 @@ final class AppModel: ObservableObject {
                 for note in valid {
                     var payload = note; payload["source"] = "iphone"
                     guard let body = try? JSONSerialization.data(withJSONObject: payload) else { remaining -= 1; continue }
-                    runScript("school_hq_context.py", ["add"], stdin: body) { result in
+                    runScript("genesis_context.py", ["add"], stdin: body) { result in
                         remaining -= 1
                         if remaining == 0, result != nil {
                             try? fm.moveItem(at: file, to: done.appendingPathComponent(String(UUID().uuidString.prefix(8)) + "-" + file.lastPathComponent))
@@ -573,7 +573,7 @@ final class AppModel: ObservableObject {
         } catch { message = error.localizedDescription; return }
         guard !busy else { return }
         syncing = true; message = ""
-        runScript("school_hq_app_bridge.py", ["request", "--policy", "local-first-v4"]) { data in
+        runScript("genesis_app_bridge.py", ["request", "--policy", "local-first-v4"]) { data in
             self.syncing = false
             if data == nil { self.message = "Could not start the sync. Your plan is unchanged." }
             self.reload()
@@ -582,7 +582,7 @@ final class AppModel: ObservableObject {
 
     func cancelSync() {
         guard let id = state?.request?.id else { return }
-        runScript("school_hq_app_bridge.py", ["cancel", "--request-id", id, "--detail", "Cancelled from the app."]) { _ in self.reload() }
+        runScript("genesis_app_bridge.py", ["cancel", "--request-id", id, "--detail", "Cancelled from the app."]) { _ in self.reload() }
     }
 
     private func startWorkerIfNeeded() {
@@ -599,7 +599,7 @@ final class AppModel: ObservableObject {
         guard let python = GenesisRuntime.python else { message = "Bundled Python runtime is missing."; return }
         p.executableURL = python
         p.environment = GenesisRuntime.environment
-        p.arguments = [workspace + "/outputs/school_hq_local_worker.py", "--request-id", ident]
+        p.arguments = [workspace + "/outputs/genesis_local_worker.py", "--request-id", ident]
         let log = bridge.appendingPathComponent("worker.log")
         if !FileManager.default.fileExists(atPath: log.path) { FileManager.default.createFile(atPath: log.path, contents: nil, attributes: [.posixPermissions: 0o600]) }
         if let h = try? FileHandle(forWritingTo: log) { _ = try? h.seekToEnd(); p.standardOutput = h; p.standardError = h }
@@ -649,7 +649,7 @@ final class AppModel: ObservableObject {
         let payload: [String: Any] = ["brief_id": briefID, "exercise_id": id, "answer": answer, "attachments": attachments[id] ?? [],
                                       "used_help": usedHelp.contains(id), "attempt_id": UUID().uuidString]
         let data = try? JSONSerialization.data(withJSONObject: payload)
-        runScript("school_hq_grader.py", ["submit"], stdin: data) { out in
+        runScript("genesis_grader.py", ["submit"], stdin: data) { out in
             self.grading.remove(id)
             if let out, let obj = try? JSONSerialization.jsonObject(with: out) as? [String: Any], let u = obj["unreadable"] as? [String: Any] {
                 // Not graded: nothing was recorded. Show what to fix and what clearer looks like.
@@ -697,7 +697,7 @@ final class AppModel: ObservableObject {
     // MARK: Notes
 
     func refreshNotes() {
-        runScript("school_hq_context.py", ["list"]) { data in
+        runScript("genesis_context.py", ["list"]) { data in
             if let data, let file = try? JSONDecoder().decode(NotesFile.self, from: data) {
                 self.notes = file.notes
                 // The first note from the phone is all the setup there is.
@@ -713,18 +713,18 @@ final class AppModel: ObservableObject {
     func openIPhoneApp() { NSWorkspace.shared.open(GenesisLinks.iPhoneApp) }
     func addNote(_ text: String) {
         let data = try? JSONSerialization.data(withJSONObject: ["text": text])
-        runScript("school_hq_context.py", ["add"], stdin: data) { _ in self.refreshNotes() }
+        runScript("genesis_context.py", ["add"], stdin: data) { _ in self.refreshNotes() }
     }
     func removeNote(_ id: String) {
         notes.removeAll { $0.id == id }
-        runScript("school_hq_context.py", ["remove", "--id", id]) { _ in self.refreshNotes() }
+        runScript("genesis_context.py", ["remove", "--id", id]) { _ in self.refreshNotes() }
     }
 
     // MARK: Library search
 
     func search(_ query: String) {
         guard query.trimmingCharacters(in: .whitespaces).count >= 2 else { searchHits = []; return }
-        runScript("school_hq_local_store.py", ["search", query]) { data in
+        runScript("genesis_local_store.py", ["search", query]) { data in
             if let data, let hits = try? JSONDecoder().decode([SearchHit].self, from: data) { self.searchHits = hits }
         }
     }
@@ -738,9 +738,9 @@ final class AppModel: ObservableObject {
         guard panel.runModal() == .OK, let url = panel.url else { return }
         scoped?.stopAccessingSecurityScopedResource(); scoped = url; _ = url.startAccessingSecurityScopedResource()
         workspace = url.path
-        if let b = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) { UserDefaults.standard.set(b, forKey: "schoolHQBookmark") }
-        UserDefaults.standard.set(workspace, forKey: "schoolHQWorkspace")
-        connected = GenesisRuntime.python != nil && FileManager.default.fileExists(atPath: workspace + "/outputs/school_hq_app_bridge.py")
+        if let b = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) { UserDefaults.standard.set(b, forKey: "genesisBookmark") }
+        UserDefaults.standard.set(workspace, forKey: "genesisWorkspace")
+        connected = GenesisRuntime.python != nil && FileManager.default.fileExists(atPath: workspace + "/outputs/genesis_app_bridge.py")
         reload(); refreshNotes()
     }
 

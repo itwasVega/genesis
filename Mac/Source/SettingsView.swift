@@ -140,14 +140,14 @@ struct SettingsView: View {
         panel.prompt = "Use this folder"
         panel.message = "Choose your iCloud Drive folder (Genesis creates a Genesis folder inside it)."
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        let config = model.outputs.appendingPathComponent("School HQ Study/phone-inbox.json")
+        let config = model.outputs.appendingPathComponent("Genesis Study/phone-inbox.json")
         try? JSONSerialization.data(withJSONObject: ["icloud_root": url.path], options: .prettyPrinted).write(to: config, options: .atomic)
         model.importPhoneNotes()
     }
 
     // MARK: Email (any IMAP provider)
 
-    var mailConfigURL: URL { model.outputs.appendingPathComponent("School HQ Study/mail.json") }
+    var mailConfigURL: URL { model.outputs.appendingPathComponent("Genesis Study/mail.json") }
     static let mailService = "Genesis.Mail.v1"
 
     func loadMail() {
@@ -167,7 +167,7 @@ struct SettingsView: View {
         try? JSONSerialization.data(withJSONObject: config, options: .prettyPrinted).write(to: mailConfigURL, options: .atomic)
         mailPassword = ""
         mailBusy = true; mailMessage = "Checking the connection…"
-        model.runScript("school_hq_mail.py", ["test"]) { data in
+        model.runScript("genesis_mail.py", ["test"]) { data in
             mailBusy = false
             let v = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
             if v?["ok"] as? Bool == true { mailConnected = address; mailMessage = (v?["detail"] as? String) ?? "Connected." }
@@ -180,7 +180,7 @@ struct SettingsView: View {
 
     func testMail() {
         mailBusy = true; mailMessage = ""
-        model.runScript("school_hq_mail.py", ["test"]) { data in
+        model.runScript("genesis_mail.py", ["test"]) { data in
             mailBusy = false
             let v = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
             mailMessage = (v?["detail"] as? String) ?? "The connection test could not run."
@@ -218,7 +218,7 @@ struct SettingsView: View {
 
     func saveFeed() {
         guard let url = URL(string: feed), url.scheme == "https", url.host == connections.canvas_host, url.path.hasSuffix(".ics") else { feedMessage = "Paste the private .ics link from your Canvas calendar."; return }
-        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "SchoolHQ.CanvasCalendar.v1", kSecAttrAccount as String: "private-feed"]
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "Genesis.CanvasCalendar.v1", kSecAttrAccount as String: "private-feed"]
         let data = Data(feed.utf8)
         var status = SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
         if status == errSecItemNotFound {
@@ -262,7 +262,7 @@ struct SettingsView: View {
 
     func testAI() {
         testingAI = true; aiMessage = "Checking sign-in and available models…"
-        model.runScript("school_hq_ai_setup.py", ["check"]) { data in
+        model.runScript("genesis_ai_setup.py", ["check"]) { data in
             testingAI = false
             guard let data, let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 aiMessage = "The connection check could not run. Reopen Genesis and try again."; return
@@ -278,7 +278,7 @@ struct SettingsView: View {
     let effortChoices = ["low", "medium", "high", "xhigh", "max"]
     let jobTitles = ["catalog": "Read practice files", "context": "Label your notes", "facts": "Exam updates", "generate": "Write problems", "verify": "Check problems", "grade": "Grade answers", "companion": "Help when you're stuck", "scout": "Find past exams"]
 
-    var configURL: URL { model.outputs.appendingPathComponent("school_hq_models.json") }
+    var configURL: URL { model.outputs.appendingPathComponent("genesis_models.json") }
 
     var studyModels: some View {
         Form {
@@ -316,7 +316,7 @@ struct SettingsView: View {
     }
 
     func loadModels() {
-        let available = model.outputs.appendingPathComponent("School HQ Study/ai-available.json")
+        let available = model.outputs.appendingPathComponent("Genesis Study/ai-available.json")
         if let data = try? Data(contentsOf: available), let value = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let names = value["models"] as? [String] { modelChoices = names }
         guard let data = try? Data(contentsOf: configURL), let v = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let jobs = v["jobs"] as? [String: [String: String]] else { return }
         modelMode = (v["mode"] as? String) == "manual" ? "manual" : "auto"
@@ -381,7 +381,7 @@ struct SettingsView: View {
 
     func runCleanup(apply: Bool) {
         cleanupBusy = true
-        model.runScript("school_hq_retention.py", apply ? ["--apply"] : []) { data in
+        model.runScript("genesis_retention.py", apply ? ["--apply"] : []) { data in
             cleanupBusy = false
             guard let data, let v = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { cleanup = "Cleanup could not run."; return }
             let files = v["files"] as? Int ?? 0, mb = v["mb"] as? Double ?? 0
@@ -439,7 +439,7 @@ struct CompanionMemoryList: View {
     }
 
     private func run(_ args: [String]) {
-        model.runScript("school_hq_companion.py", args) { data in
+        model.runScript("genesis_companion.py", args) { data in
             guard let data, let v = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let list = v["facts"] as? [[String: Any]] else { return }
             facts = list.compactMap { f in (f["id"] as? String).map { Fact(id: $0, text: f["text"] as? String ?? "") } }
         }

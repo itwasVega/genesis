@@ -84,7 +84,7 @@ final class Companion: ObservableObject {
     private var lastReplan = Date.distantPast
     private var advanceWork: DispatchWorkItem?
 
-    // How you talk and how you study, learned on this Mac (school_hq_companion.py profile).
+    // How you talk and how you study, learned on this Mac (genesis_companion.py profile).
     private var lowercase = false
     private var periods = true
     private var breakAt: Double = 12          // minutes of focus before the orb steps in
@@ -142,7 +142,7 @@ final class Companion: ObservableObject {
 
     /// Picks up how you write and how long you usually focus.
     func loadProfile() {
-        model?.runScript("school_hq_companion.py", ["profile"]) { [weak self] data in
+        model?.runScript("genesis_companion.py", ["profile"]) { [weak self] data in
             guard let self, let v = data.flatMap({ try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }) else { return }
             let st = v["style"] as? [String: Any] ?? [:], hb = v["habits"] as? [String: Any] ?? [:]
             self.lowercase = st["lowercase"] as? Bool ?? false
@@ -164,7 +164,7 @@ final class Companion: ObservableObject {
     /// The activity log the habits come from (on this Mac only): what you're doing, never what you type.
     func log(_ event: String, task: String? = nil) {
         guard let model, model.connected else { return }
-        let url = model.outputs.appendingPathComponent("School HQ Study/activity.jsonl")
+        let url = model.outputs.appendingPathComponent("Genesis Study/activity.jsonl")
         var e: [String: Any] = ["t": ISO8601DateFormatter().string(from: Date()), "e": event]
         if let t = task ?? model.openTask?.exerciseID { e["task"] = t }
         guard let data = try? JSONSerialization.data(withJSONObject: e), var line = String(data: data, encoding: .utf8) else { return }
@@ -361,7 +361,7 @@ final class Companion: ObservableObject {
     }
 
     private func wrapUp() {
-        model?.runScript("school_hq_companion.py", ["summary"]) { [weak self] data in
+        model?.runScript("genesis_companion.py", ["summary"]) { [weak self] data in
             guard let self, let model = self.model else { return }
             let v = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
             let lines = v["lines"] as? [String] ?? []
@@ -484,7 +484,7 @@ final class Companion: ObservableObject {
         if let name = UserDefaults.standard.string(forKey: "userName"), !name.isEmpty { payload["name"] = name }
         if let t = model.openTask { payload["task"] = ["title": t.title.replacingOccurrences(of: "`", with: ""), "course": t.courseID] }
         let pulse = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: true) { [weak self] _ in Task { @MainActor in self?.pressID += 1 } }
-        model.runScript("school_hq_companion.py", ["chat"], stdin: try? JSONSerialization.data(withJSONObject: payload)) { [weak self] data in
+        model.runScript("genesis_companion.py", ["chat"], stdin: try? JSONSerialization.data(withJSONObject: payload)) { [weak self] data in
             pulse.invalidate()
             guard let self else { return }
             self.thinking = false
@@ -522,7 +522,7 @@ final class Companion: ObservableObject {
         let payload: [String: Any] = ["brief_id": brief.id, "exercise_id": task.exerciseID, "kind": kind,
                                       "draft": model.drafts[task.exerciseID] ?? "", "question": kind == "ask" ? question : ""]
         let pulse = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: true) { [weak self] _ in Task { @MainActor in self?.pressID += 1 } }
-        model.runScript("school_hq_companion.py", ["help"], stdin: try? JSONSerialization.data(withJSONObject: payload)) { [weak self] data in
+        model.runScript("genesis_companion.py", ["help"], stdin: try? JSONSerialization.data(withJSONObject: payload)) { [weak self] data in
             pulse.invalidate()
             guard let self else { return }
             self.thinking = false

@@ -12,7 +12,7 @@ def configs(key,settings,app=False):
  for name in ('Debug','Release'):
   s={**settings,'SWIFT_OPTIMIZATION_LEVEL':'-Onone' if name=='Debug' else '-O','DEBUG_INFORMATION_FORMAT':'dwarf' if name=='Debug' else 'dwarf-with-dsym'}
   s['CODE_SIGN_IDENTITY']='Apple Development' if name=='Debug' else 'Developer ID Application'
-  if app and name=='Debug':s['PRODUCT_BUNDLE_IDENTIFIER']='com.xander.schoolhq.distributiontest'
+  if app and name=='Debug':s['PRODUCT_BUNDLE_IDENTIFIER']='com.xander.genesis.dev'
   ids.append(obj(key+name,isa='XCBuildConfiguration',name=name,buildSettings=s))
  return obj(key,isa='XCConfigurationList',buildConfigurations=ids,defaultConfigurationIsVisible=0,defaultConfigurationName='Release')
 def build(ref,sign=False):return obj('build:'+ref,isa='PBXBuildFile',fileRef=ref,**({'settings':{'ATTRIBUTES':['CodeSignOnCopy']}} if sign else {}))
@@ -57,7 +57,7 @@ for directory,refs in code.items():
  # One phase per runtime directory. Each executable and library is signed by Xcode.
  entries=[build(r,True) for r in refs]
  phases.append(obj('copy:'+directory,isa='PBXCopyFilesBuildPhase',buildActionMask=2147483647,files=entries,runOnlyForDeploymentPostprocessing=0,dstSubfolderSpec=7,dstPath='Python/'+directory,name='Embed signed Python '+directory))
-settings={**common,'PRODUCT_NAME':'Genesis','PRODUCT_BUNDLE_IDENTIFIER':'com.xander.schoolhq','INFOPLIST_FILE':'Info.plist','GENERATE_INFOPLIST_FILE':'NO','MARKETING_VERSION':'1.0','CURRENT_PROJECT_VERSION':'45','LD_RUNPATH_SEARCH_PATHS':['$(inherited)','@executable_path/../Frameworks'],'COMBINE_HIDPI_IMAGES':'YES'}
+settings={**common,'PRODUCT_NAME':'Genesis','PRODUCT_BUNDLE_IDENTIFIER':'com.xander.genesis','INFOPLIST_FILE':'Info.plist','GENERATE_INFOPLIST_FILE':'NO','MARKETING_VERSION':'1.0','CURRENT_PROJECT_VERSION':'45','LD_RUNPATH_SEARCH_PATHS':['$(inherited)','@executable_path/../Frameworks'],'COMBINE_HIDPI_IMAGES':'YES'}
 target=obj('app-target',isa='PBXNativeTarget',name='Genesis',productName='Genesis',productType='com.apple.product-type.application',productReference=app,buildConfigurationList=configs('app-config',settings,app=True),buildPhases=phases,buildRules=[],dependencies=[dependency])
 products=obj('products',isa='PBXGroup',name='Products',sourceTree='<group>',children=[app,helper])
 allfiles=sources+[helper_source]+resources+[x for refs in code.values() for x in refs]+[file('Info.plist','text.plist.xml')]

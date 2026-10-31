@@ -13,12 +13,12 @@ def setup():
  tmp=Path(tempfile.mkdtemp());root=tmp/'outputs';root.mkdir()
  for f in SRC.glob('*.py'):shutil.copy(f,root/f.name)
  for f in SRC.glob('*.json'):shutil.copy(f,root/f.name)
- (root/'School HQ App/Bridge').mkdir(parents=True);(root/'School HQ Study').mkdir(parents=True)
- (root/'School HQ Study/connections.json').write_text(json.dumps({'canvas_host':'canvas.example.edu','courses':[{'id':i,'canvas_id':c,'label':l} for i,c,l in [('COP3330','1000004','Java'),('COP3502C','1000001','CS1'),('COT3100C','1000002','Discrete'),('MAC2311C','1000003','Calculus')]]}))
- shutil.copy(STAGED/'School HQ Study/coaching-state.json',root/'School HQ Study/coaching-state.json')
- shutil.copy(HERE/'fixtures/lesson-bank.json',root/'School HQ Study/lesson-bank.json')
- (root/'School HQ Study/assessments.json').write_text(json.dumps({'schema':1,'assessments':[{'id':'COP3502C:lab-exam','course':'COP3502C','name':'Week 10 lab exam','date':None,'certainty':'unknown','status':'scheduled','sources':[],'objectives':[{'id':'dma','title':'Dynamic memory allocation','formats':['write code']},{'id':'ll','title':'Linked lists','formats':['write code']},{'id':'rec','title':'Recursion','formats':['trace']},{'id':'stk','title':'Stacks and queues','formats':['write code']}]}]}))
- mat=root/'School HQ App/Bridge/Runs/r1/material';mat.mkdir(parents=True)
+ (root/'Genesis App/Bridge').mkdir(parents=True);(root/'Genesis Study').mkdir(parents=True)
+ (root/'Genesis Study/connections.json').write_text(json.dumps({'canvas_host':'canvas.example.edu','courses':[{'id':i,'canvas_id':c,'label':l} for i,c,l in [('COP3330','1000004','Java'),('COP3502C','1000001','CS1'),('COT3100C','1000002','Discrete'),('MAC2311C','1000003','Calculus')]]}))
+ shutil.copy(STAGED/'Genesis Study/coaching-state.json',root/'Genesis Study/coaching-state.json')
+ shutil.copy(HERE/'fixtures/lesson-bank.json',root/'Genesis Study/lesson-bank.json')
+ (root/'Genesis Study/assessments.json').write_text(json.dumps({'schema':1,'assessments':[{'id':'COP3502C:lab-exam','course':'COP3502C','name':'Week 10 lab exam','date':None,'certainty':'unknown','status':'scheduled','sources':[],'objectives':[{'id':'dma','title':'Dynamic memory allocation','formats':['write code']},{'id':'ll','title':'Linked lists','formats':['write code']},{'id':'rec','title':'Recursion','formats':['trace']},{'id':'stk','title':'Stacks and queues','formats':['write code']}]}]}))
+ mat=root/'Genesis App/Bridge/Runs/r1/material';mat.mkdir(parents=True)
  docs=[('COP3502C','CS1 Midterm Sample.pdf',['B. Recursion question 2: Write a recursive function byeList that frees every node of a linked list. void byeList(node* head)','Q3 Trace the following pointer code and give the output of each printf.']),
        ('COP3502C','CS1 Midterm Sample Answer Key.pdf',['void byeList(node* head){ if(head==NULL) return; byeList(head->next); free(head); }','Output: 5 7']),
        ('COP3502C','LinkedLists.pdf',['Linked lists: each node stores data and a pointer next. Freeing a list recursively: free the rest first then the node. linked list traversal deletion pointer ownership recursion '*3]),
@@ -26,11 +26,11 @@ def setup():
  assets=[]
  for course,title,pages in docs:
   p=mat/title;data=b'%PDF-1.4 fixture '+title.encode();p.write_bytes(data)
-  (root/'School HQ Study/Catalog/text').mkdir(parents=True,exist_ok=True)
-  (root/'School HQ Study/Catalog/text'/(sha(data)+'.json')).write_text(json.dumps({'sha256':sha(data),'pages':pages}))
+  (root/'Genesis Study/Catalog/text').mkdir(parents=True,exist_ok=True)
+  (root/'Genesis Study/Catalog/text'/(sha(data)+'.json')).write_text(json.dumps({'sha256':sha(data),'pages':pages}))
   assets.append({'id':course+':'+str(p),'path':str(p),'title':title,'kind':'Course material','course':course,'sha256':sha(data),'source_url':'https://canvas.example.edu/courses/1/files/1','verification_state':'verified_bytes_not_learning_coverage'})
- (root/'School HQ App/Bridge/library.json').write_text(json.dumps({'courses':[{'id':c} for c in ('COP3330','COP3502C','MAC2311C','COT3100C','CIS3360')],'assets':assets}))
- (root/'School HQ App/Bridge/state.json').write_text(json.dumps({'schema':1,'request':{'id':'req-1','status':'processing','manual':True,'requested_at':datetime.now(timezone.utc).isoformat(),'policy_id':'local-first-v3'},'sources':{},'events':[],'brief':None}))
+ (root/'Genesis App/Bridge/library.json').write_text(json.dumps({'courses':[{'id':c} for c in ('COP3330','COP3502C','MAC2311C','COT3100C','CIS3360')],'assets':assets}))
+ (root/'Genesis App/Bridge/state.json').write_text(json.dumps({'schema':1,'request':{'id':'req-1','status':'processing','manual':True,'requested_at':datetime.now(timezone.utc).isoformat(),'policy_id':'local-first-v3'},'sources':{},'events':[],'brief':None}))
  return root
 
 class FakeClient:
@@ -68,8 +68,8 @@ class FakeClient:
 def main():
  root=setup();sys.path.insert(0,str(root));os.chdir(root)
  for m in list(sys.modules):
-  if m.startswith('school_hq'):del sys.modules[m]
- import school_hq_engine as engine,school_hq_ai as ai,school_hq_coaching as c,school_hq_context as ctx
+  if m.startswith('genesis'):del sys.modules[m]
+ import genesis_engine as engine,genesis_ai as ai,genesis_coaching as c,genesis_context as ctx
  ai.WORK=root.parent/'work/engine'
  ctx.add('I missed Monday CS1 class and recursion makes no sense')
  published={}
@@ -77,10 +77,10 @@ def main():
   if args[0]=='publish':
    packet=json.loads(Path(args[2]).read_text())
    state=c.load(root);tasks,rubrics=c.validate_packet(packet,root,state,count_pages=lambda p,r:10)
-   import school_hq_source_use as su,school_hq_brief_context as bc
-   req=json.loads((root/'School HQ App/Bridge/state.json').read_text())['request']
-   (root/'School HQ App/Bridge/Runs/req-1').mkdir(parents=True,exist_ok=True)
-   json.dump({'request_id':'req-1','source_use_contract':su.candidates(root,json.loads((root/'School HQ App/Bridge/preparation.json').read_text()))},open(root/'School HQ App/Bridge/Runs/req-1/source-manifest.json','w'))
+   import genesis_source_use as su,genesis_brief_context as bc
+   req=json.loads((root/'Genesis App/Bridge/state.json').read_text())['request']
+   (root/'Genesis App/Bridge/Runs/req-1').mkdir(parents=True,exist_ok=True)
+   json.dump({'request_id':'req-1','source_use_contract':su.candidates(root,json.loads((root/'Genesis App/Bridge/preparation.json').read_text()))},open(root/'Genesis App/Bridge/Runs/req-1/source-manifest.json','w'))
    notes=su.validate(packet,root,'req-1')+bc.validate(packet,root,req)
    published.update(tasks=tasks,rubrics=rubrics,notes=notes,packet=packet)
    return {'status':'published','tasks':len(tasks)}
@@ -101,18 +101,18 @@ def main():
  t=tasks[0];print('keys',sorted(t))
  assert all('private_solution' not in t for t in tasks)
  assert any(s.get('pages') for t in tasks for s in t['sources'])
- plan=json.loads((root/'School HQ App/Bridge/Runs/req-1/plan.json').read_text())
+ plan=json.loads((root/'Genesis App/Bridge/Runs/req-1/plan.json').read_text())
  print('slots',[(s['course'],s['mode'],s['skill_name'][:30],(s.get('problem') or {}).get('item',{}).get('label')) for s in plan['slots']])
  print('obligations',[(o['name'][:20],o['basis'][:30],len(o['slots'])) for o in plan['obligations']])
- cov=json.loads((root/'School HQ App/Bridge/coverage.json').read_text());print('coverage',[(o['name'][:15],[(t['title'][:18],bool(t['exercise_id'])) for t in o['topics']]) for o in cov['obligations']])
+ cov=json.loads((root/'Genesis App/Bridge/coverage.json').read_text());print('coverage',[(o['name'][:15],[(t['title'][:18],bool(t['exercise_id'])) for t in o['topics']]) for o in cov['obligations']])
  print('new skills',[x['id'] for x in plan['new_skills']])
- print('catalog files',[p.name for p in (root/'School HQ Study/Catalog').glob('*.json')])
+ print('catalog files',[p.name for p in (root/'Genesis Study/Catalog').glob('*.json')])
  print('models used',sorted(set((m,e) for m,e,_ in FakeClient.calls)))
  # Grade the first code task.
- st=json.loads((root/'School HQ App/Bridge/state.json').read_text());st['brief']={'id':'req-1','tasks':tasks};(root/'School HQ App/Bridge/state.json').write_text(json.dumps(st))
- (root/'School HQ App/Bridge/Packets/req-1').mkdir(parents=True);(root/'School HQ App/Bridge/Packets/req-1/rubrics.json').write_text(json.dumps(published['rubrics']))
+ st=json.loads((root/'Genesis App/Bridge/state.json').read_text());st['brief']={'id':'req-1','tasks':tasks};(root/'Genesis App/Bridge/state.json').write_text(json.dumps(st))
+ (root/'Genesis App/Bridge/Packets/req-1').mkdir(parents=True);(root/'Genesis App/Bridge/Packets/req-1/rubrics.json').write_text(json.dumps(published['rubrics']))
  st2=c.load(root);c.record_packet(published['packet'],tasks,st2);c.persist(st2,root)
- import school_hq_grader as g
+ import genesis_grader as g
  fb=g.submit({'brief_id':'req-1','exercise_id':tasks[0]['exercise_id'],'answer':'void byeList(node*h){free(h);byeList(h->next);}','attempt_id':'a1b2c3d4e5f6'},client_factory=lambda:FakeClient)
  print('grade',fb['latest']['outcome'],fb['retry']['exercise_id'])
  fb2=g.submit({'brief_id':'req-1','exercise_id':fb['retry']['exercise_id'],'answer':'int sumList(node*h){return h?h->v+sumList(h->next):0;}','attempt_id':'b1b2c3d4e5f6'},client_factory=lambda:FakeClient)

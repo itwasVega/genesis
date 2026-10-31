@@ -94,7 +94,7 @@ def main():
     resources=app/'Contents/Resources';resources.mkdir(parents=True)
     (app/'Contents/MacOS').mkdir()
     shutil.copy2(binary,app/'Contents/MacOS/Genesis')
-    info=plistlib.loads((ROOT/'Info.plist').read_bytes());info['CFBundleIdentifier']='com.xander.schoolhq';info['CFBundleVersion']='44'
+    info=plistlib.loads((ROOT/'Info.plist').read_bytes());info['CFBundleIdentifier']='com.xander.genesis';info['CFBundleVersion']='44'
     (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
     for name in ['Math','GenesisFonts']:
         shutil.copytree(ROOT/'Resources'/name,resources/('Fonts' if name=='GenesisFonts' else name))

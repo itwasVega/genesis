@@ -17,9 +17,9 @@ __pycache__/
 .DS_Store
 ._*
 # Never commit personal study data, accounts or secrets
-School HQ Study/
-!tests/fixtures/School HQ Study/
-School HQ App/Bridge/
+Genesis Study/
+!tests/fixtures/Genesis Study/
+Genesis App/Bridge/
 Canvas School Source/
 connections.json
 *.p12
