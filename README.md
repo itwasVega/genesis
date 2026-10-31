@@ -50,7 +50,7 @@ Plugins are the places Genesis gathers what it needs to build your brief: assign
 4. If you added Canvas: in **Settings › Accounts**, add each class (its code, a name, and the number after `/courses/` in its Canvas URL), then **Sign in to Canvas**.
 5. Click **Sync**. Your first plan takes a few minutes.
 
-The **iPhone app** is in beta testing through TestFlight. Ask in [Discussions](../../discussions) for an invite.
+**On iPhone:** [get the Genesis beta](docs/IPHONE.md) to send notes from class. The first note you send is all the setup there is.
 
 ## Privacy
 

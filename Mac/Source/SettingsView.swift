@@ -104,7 +104,10 @@ struct SettingsView: View {
                 Text("The Genesis iPhone app drops notes into iCloud Drive › Genesis. They show up under Tell Genesis within a minute and count at your next sync.")
                     .font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
                 Text(phoneStatus).font(Typeface.sans(12))
-                Button("Choose iCloud Drive folder…") { choosePhoneFolder() }
+                HStack {
+                    Button("Choose iCloud Drive folder…") { choosePhoneFolder() }
+                    if !model.phoneSeen { Button("Get the iPhone app") { model.openIPhoneApp() } }
+                }
             }
             Section("What Genesis knows about you") {
                 CompanionMemoryList()

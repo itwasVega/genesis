@@ -427,6 +427,20 @@ final class Companion: ObservableObject {
             startChat(moment: "check_in")
             return
         }
+        // The iPhone app, once in a while, in its own words: never during a task, at most twice
+        // (five days apart), and never again once a note has come in from the phone.
+        let pitched = UserDefaults.standard.integer(forKey: "companionPhonePitches")
+        let lastPitch = UserDefaults.standard.object(forKey: "companionPhonePitchedAt") as? Date ?? .distantPast
+        if NSApp.isActive, !model.phoneSeen, pitched < 2, model.openTask == nil, !visible, model.planIsToday,
+           now.timeIntervalSince(lastPitch) > 5 * 86400, now.timeIntervalSince(lastActivity) < 600, Double.random(in: 0..<1) < 1.0 / 60 {
+            UserDefaults.standard.set(pitched + 1, forKey: "companionPhonePitches"); UserDefaults.standard.set(now, forKey: "companionPhonePitchedAt")
+            show(CompanionLine(text: say(pick("phone", ["psst. I live on your phone too. text me from class and the plan's fixed before you're back",
+                                                           "ngl I get lonely when you're in lecture. get me on your iPhone and send me notes from your seat",
+                                                           "test moved? missed something? you can tell me right from class if you grab the iPhone app"])),
+                               actions: [CompanionAction(label: sayLabel("Get the iPhone app"), primary: true) { [weak self] in self?.model?.openIPhoneApp(); self?.dismiss() },
+                                         CompanionAction(label: sayLabel(pick("phoneNo", ["maybe later", "not rn", "later"]))) { [weak self] in self?.notNow() }]), linger: 30)
+            return
+        }
         // Away from Genesis while something is due within a day: one gentle nudge, at most
         // twice a day, never at night.
         let hour = Calendar.current.component(.hour, from: now)

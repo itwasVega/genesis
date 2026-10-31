@@ -694,9 +694,19 @@ final class AppModel: ObservableObject {
 
     func refreshNotes() {
         runScript("school_hq_context.py", ["list"]) { data in
-            if let data, let file = try? JSONDecoder().decode(NotesFile.self, from: data) { self.notes = file.notes }
+            if let data, let file = try? JSONDecoder().decode(NotesFile.self, from: data) {
+                self.notes = file.notes
+                // The first note from the phone is all the setup there is.
+                if file.notes.contains(where: { $0.source == "iphone" }) && !self.phoneSeen { self.phoneSeen = true }
+            }
         }
     }
+
+    /// Whether a note has ever come in from the iPhone app. Until then, Genesis suggests it now and then.
+    @Published var phoneSeen = UserDefaults.standard.bool(forKey: "phoneSeen") {
+        didSet { UserDefaults.standard.set(phoneSeen, forKey: "phoneSeen") }
+    }
+    func openIPhoneApp() { NSWorkspace.shared.open(GenesisLinks.iPhoneApp) }
     func addNote(_ text: String) {
         let data = try? JSONSerialization.data(withJSONObject: ["text": text])
         runScript("school_hq_context.py", ["add"], stdin: data) { _ in self.refreshNotes() }

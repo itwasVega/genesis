@@ -127,6 +127,7 @@ struct TodayView: View {
                 }
                 Text("Used in your next sync. Your notes, not verified course facts.")
                     .font(Typeface.sans(11)).foregroundStyle(Theme.tertiary)
+                PhoneNudge()
                 FlowChips(notes: model.notes)
             }
         }
@@ -402,5 +403,50 @@ struct EmptyPlan: View {
             if showSync { Button("Sync now") { model.requestSync() }.primaryAction() }
         }
         .card(padding: 24, radius: 18)
+    }
+}
+
+
+/// Under "Tell Genesis", once you've written a note on the Mac and never sent one from the phone:
+/// the iPhone app is the faster way. "Not now" hides it for a week; the first phone note ends it.
+struct PhoneNudge: View {
+    @EnvironmentObject var model: AppModel
+    @State private var snoozedUntil = UserDefaults.standard.object(forKey: "phoneNudgeSnoozed") as? Date ?? .distantPast
+    @State private var hover = false
+
+    private static let lines: [(String, String)] = [
+        ("Say it from your seat.", "Get Genesis on your iPhone and send notes mid-lecture. Your plan's already fixed by the time you're home."),
+        ("Class moved the test?", "Tell Genesis from your phone the moment it happens. No waiting till you're back at your Mac."),
+        ("Your Mac can't come to class.", "Your phone can. Send notes from your seat and Genesis reshapes today around them."),
+    ]
+    @State private var line = PhoneNudge.lines.randomElement()!
+
+    var body: some View {
+        if !model.phoneSeen && !model.notes.isEmpty && snoozedUntil < Date() {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: "iphone.gen3.radiowaves.left.and.right")
+                    .font(.system(size: 18)).foregroundStyle(Theme.focus)
+                    .frame(width: 40, height: 40).background(Theme.focus.opacity(0.1), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(line.0).font(Typeface.sans(13.5, .medium))
+                    Text(line.1).font(Typeface.sans(12)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                VStack(alignment: .trailing, spacing: 6) {
+                    Button("Get the iPhone app") { model.openIPhoneApp() }.primaryAction()
+                    Button("Not now") {
+                        let until = Date().addingTimeInterval(7 * 86400)
+                        UserDefaults.standard.set(until, forKey: "phoneNudgeSnoozed")
+                        withAnimation(.easeOut(duration: 0.2)) { snoozedUntil = until }
+                    }
+                    .buttonStyle(QuietButtonStyle())
+                }
+            }
+            .padding(14)
+            .background(Theme.raised, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.focus.opacity(hover ? 0.45 : 0.25), lineWidth: 1))
+            .onHover { hover = $0 }
+            .transition(.opacity.combined(with: .move(edge: .top)))
+        }
     }
 }

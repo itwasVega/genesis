@@ -83,3 +83,9 @@ struct GenesisConfiguration: Codable {
         try enc.encode(self).write(to: file, options: .atomic)
     }
 }
+
+enum GenesisLinks {
+    /// Where "Get the iPhone app" goes: a page in the public repo that carries the current
+    /// TestFlight link, so the link can change without shipping a new Mac build.
+    static let iPhoneApp = URL(string: "https://github.com/itwasVega/genesis/blob/main/docs/IPHONE.md")!
+}
