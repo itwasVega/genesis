@@ -138,7 +138,8 @@ enum Upgrade {
     static func workspace(_ root: URL, template: URL) {
         let fm = FileManager.default, out = root.appendingPathComponent("outputs")
         let leftovers = ((try? fm.contentsOfDirectory(atPath: out.path)) ?? []).contains { $0.hasPrefix(oldName) || $0.hasPrefix(oldCode) || $0.hasPrefix("." + oldCode) }
-        guard leftovers, let python = GenesisRuntime.python else { return }
+        let oldWork = fm.fileExists(atPath: root.appendingPathComponent("work/" + "school" + "-hq-app").path)
+        guard leftovers || oldWork, let python = GenesisRuntime.python else { return }
         let script = template.appendingPathComponent("outputs/genesis_migrate.py")
         guard fm.fileExists(atPath: script.path) else { return }
         let p = Process(); p.executableURL = python; p.arguments = ["-I", script.path, root.path]
