@@ -1,5 +1,4 @@
 import Foundation
-import Security
 
 /// Release resources are bundled; mutable records live in the user's Application Support.
 enum GenesisRuntime {
@@ -103,7 +102,7 @@ enum Upgrade {
     static let oldCode = "school" + "_hq_"
     static let oldBundle = "com.xander." + "school" + "hq"
 
-    /// Before anything else runs: settings, the Canvas session and Keychain entries.
+    /// Before anything else runs: settings and the Canvas session.
     static func identity() {
         let defaults = UserDefaults.standard
         guard !defaults.bool(forKey: "upgradedFromOldName") else { return }
@@ -123,20 +122,9 @@ enum Upgrade {
                 if !fm.fileExists(atPath: target.path) { try? fm.copyItem(at: base.appendingPathComponent(name), to: target) }
             }
         }
-        // The private Canvas calendar feed moves to its Genesis Keychain name.
-        let oldQuery: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "School" + "HQ.CanvasCalendar.v1",
-                                       kSecAttrAccount as String: "private-feed", kSecReturnData as String: true]
-        var found: AnyObject?
-        if SecItemCopyMatching(oldQuery as CFDictionary, &found) == errSecSuccess, let data = found as? Data {
-            let item: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "Genesis.CanvasCalendar.v1",
-                                       kSecAttrAccount as String: "private-feed", kSecValueData as String: data,
-                                       kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly]
-            let status = SecItemAdd(item as CFDictionary, nil)
-            if status == errSecSuccess || status == errSecDuplicateItem {
-                var remove = oldQuery; remove.removeValue(forKey: kSecReturnData as String)
-                SecItemDelete(remove as CFDictionary)
-            }
-        }
+        // Keychain entries are never read here: one saved by the old app would make macOS ask
+        // for permission before the window even opens. The Canvas calendar link is fetched again
+        // from Canvas on the next sync instead (LocalCanvas.refreshCalendarFeed).
     }
 
     /// The workspace's folders, files, saved paths and database, through genesis_migrate.py.

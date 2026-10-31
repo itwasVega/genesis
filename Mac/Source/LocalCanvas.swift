@@ -3,6 +3,7 @@ import WebKit
 import AppKit
 import CryptoKit
 import PDFKit
+import Security
 
 @MainActor final class LocalCanvas: NSObject,ObservableObject,WKNavigationDelegate,WKDownloadDelegate {
  @Published var message="Canvas uses its own Genesis browser profile. It does not inherit ChatGPT or Safari sign-ins."
@@ -145,6 +146,7 @@ import PDFKit
     try ensureActive(root,ident)
     captures += result["captures"] as? [[String:Any]] ?? [];diagnostics=result
     await refreshCourseFacts(root:root)
+    await refreshCalendarFeed(root:root)
     var failures=result["failures"] as? [[String:Any]] ?? []
     for resource in result["resources"] as? [[String:Any]] ?? [] {
      try ensureActive(root,ident)
@@ -210,6 +212,16 @@ import PDFKit
    if !f.term.isEmpty,config.courses[i].term != f.term{config.courses[i].term=f.term;changed=true}
   }
   if changed{try? config.save(root:root)}
+ }
+
+ /// Each sync: if Calendar is on but its private link isn't saved under Genesis's name (after an
+ /// upgrade, say), fetch it from Canvas again and save it. No permission prompt: Genesis owns it.
+ func refreshCalendarFeed(root:String) async {
+  guard (try? GenesisConfiguration.load(root:root))?.plugins["calendar"] == true else{return}
+  let query:[String:Any]=[kSecClass as String:kSecClassGenericPassword,kSecAttrService as String:"Genesis.CanvasCalendar.v1",kSecAttrAccount as String:"private-feed"]
+  guard SecItemCopyMatching(query as CFDictionary,nil)==errSecItemNotFound,let feed=await calendarFeed() else{return}
+  var item=query;item[kSecValueData as String]=Data(feed.utf8);item[kSecAttrAccessible as String]=kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+  SecItemAdd(item as CFDictionary,nil)
  }
 
  /// Setup: the private calendar feed Canvas makes for every student (so due dates never slip).
