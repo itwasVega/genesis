@@ -6,8 +6,11 @@ struct GenesisCourse: Codable, Identifiable {
     var canvas_id: String
 }
 
-/// A plugin: something Genesis can use only after you pick it. Like adding a connector to
-/// ChatGPT or Claude: if you don't need it, it never runs, collects or appears.
+/// A plugin is a place Genesis gathers what it needs for your brief: assignments, documents,
+/// dates, announcements. Like adding a connector to ChatGPT or Claude: off until you add it,
+/// and if you don't, it never runs or collects anything. (The companion and iPhone notes are
+/// part of Genesis itself, not plugins: notes from the phone just start working the first
+/// time one arrives.)
 struct GenesisPlugin: Identifiable {
     let id: String
     let name: String
@@ -20,9 +23,6 @@ struct GenesisPlugin: Identifiable {
         GenesisPlugin(id: "canvas", name: "Canvas", symbol: "graduationcap",
                       summary: "Builds your plan from your classes.",
                       detail: "Reads assignments, announcements, files and grades from UCF Webcourses through Genesis's own browser, read-only.", suggested: true),
-        GenesisPlugin(id: "iphone", name: "iPhone notes", symbol: "iphone",
-                      summary: "Rapid-fire notes from your phone.",
-                      detail: "\"Missed class\", \"test moved to Friday\", \"quiz covers 4.2\": send notes from the Genesis iPhone app and your plan reshapes around them. Uses a folder in iCloud Drive."),
         GenesisPlugin(id: "calendar", name: "Calendar", symbol: "calendar",
                       summary: "Due dates from your Webcourses calendar.",
                       detail: "Adds your private Webcourses calendar feed, for dates that only show up there. The link is stored in your Keychain."),

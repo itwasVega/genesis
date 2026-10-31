@@ -25,7 +25,7 @@ Thanks for helping. Genesis is a small project, so a clear bug report is often a
 
 ## Guidelines
 
-- **Plugins stay optional.** The planner and the companion are the core. Anything that reads an account or a new data source must be a plugin that is off until the student adds it, and must do nothing when it's off.
+- **Plugins stay optional.** The planner, the companion and iPhone notes are the core. A new place to gather assignments, documents, dates or announcements must be a plugin that is off until the student adds it, and must do nothing when it's off.
 - **Local first.** Study records stay on the student's Mac. Don't add servers, analytics or telemetry.
 - **No shipped credentials or personal data.** No API keys, accounts, course IDs, real student work or private files in the repo, tests or fixtures.
 - **Honest learning signals.** Don't count something as mastered unless the student showed it. Hints, partial answers and same-day repairs are tracked separately on purpose.

@@ -27,16 +27,15 @@
 - **Checks your work** against a rubric, including photos and PDFs of handwritten work. Answers you fix the same day count as repaired, and answers you got with a hint count as supported, so your progress is honest.
 - **One box for every answer.** Type, drop in a PDF or screenshot of your iPad notes, or use the paperclip to choose a file or take a photo, scan or sketch straight from your iPhone or iPad.
 - **A companion that feels like a friend.** The heart of Genesis: a small living orb that shows up on its own, when you're stuck, about to drift, done for the day, or just to check in. Every appearance starts with a choice (talk, or not now), and you lead every conversation. Its light gathers into a face that follows the moment. Need quiet? Turn it off in **Settings** for an hour, until tomorrow, or until you turn it back on.
-- **Rapid-fire notes from your phone.** "Missed class." "Test moved to Friday." "Quiz covers 4.2." Your plan reshapes around them.
+- **Rapid-fire notes from your phone.** "Missed class." "Test moved to Friday." "Quiz covers 4.2." Your plan reshapes around them. Nothing to set up: it starts working the first time you send a note.
 
 ## Plugins
 
-Genesis and its companion are always there. Every outside connection is a **plugin**: off until you add it, and it never runs, collects or appears if you don't. You pick them on first launch and can change them any time in **Settings › Plugins**.
+Plugins are the places Genesis gathers what it needs to build your brief: assignments, documents, dates and announcements. Each one is off until you add it, and it never runs or collects anything if you don't. You pick them on first launch and can change them any time in **Settings › Plugins**. (The companion and iPhone notes are part of Genesis itself, not plugins.)
 
 | Plugin | What it adds |
 | --- | --- |
 | **Canvas** | Builds your plan from your classes: assignments, announcements, files and grades, read-only, through Genesis's own browser. |
-| **iPhone notes** | Notes from the Genesis iPhone app, delivered through a folder in iCloud Drive. |
 | **Calendar** | Your private Webcourses calendar feed, for dates that only show up there. |
 | **Email** | Course emails, searchable in Library (read-only). |
 | **Professor websites** | Public course pages some professors keep outside Canvas. |

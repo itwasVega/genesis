@@ -316,7 +316,6 @@ final class AppModel: ObservableObject {
         if id == "professor_sites" && !on { c.cop3330_professor_enabled = nil }
         do { try c.save(root: workspace) } catch { message = error.localizedDescription; return }
         if on { plugins.insert(id) } else { plugins.remove(id) }
-        if id == "iphone" && on { importPhoneNotes() }
     }
 
     func finishPluginChoice() {
@@ -390,7 +389,6 @@ final class AppModel: ObservableObject {
     /// Tell Genesis, and publishes the class list the phone shows. Runs in the app itself so
     /// macOS asks once for iCloud Drive access on behalf of Genesis.
     func importPhoneNotes() {
-        guard plugins.contains("iphone") else { return }
         if ProcessInfo.processInfo.environment["GENESIS_TEST_WORKSPACE"] != nil { return }
         guard connected else { return }
         let statusURL = bridge.appendingPathComponent("phone-inbox.json")

@@ -33,7 +33,7 @@ Genesis is two programs that share a folder: a native SwiftUI app and a Python b
 
 ## Plugins
 
-`GenesisConfiguration.swift` and `school_hq_connections.py` read the same `connections.json`. Each plugin is checked where its work happens (sync, the worker's optional sources, phone import), so a plugin that's off does nothing at all. The companion isn't a plugin: it's part of Genesis.
+`GenesisConfiguration.swift` and `school_hq_connections.py` read the same `connections.json`. Plugins are sources for the brief. Each is checked where its work happens (sync, and the worker's optional sources), so a plugin that's off does nothing at all. The companion and iPhone notes aren't plugins: they're part of Genesis, and phone notes start working the first time one arrives.
 
 ## The iPhone app
 

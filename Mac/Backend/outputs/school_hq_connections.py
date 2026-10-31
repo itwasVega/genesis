@@ -29,13 +29,13 @@ def labels(root=ROOT):
     return {row['id']: row['label'] for row in read(root)['courses']}
 
 
-# Plugins: every outside connection is optional (the planner and the companion are the core). Nothing runs, collects or appears
+# Plugins: the places Genesis gathers what it needs for the brief (assignments, documents,
+# dates, announcements). The planner, the companion and iPhone notes are the core, not plugins. Nothing runs, collects or appears
 # until the student picks it in Settings > Plugins (or on first launch).
 PLUGINS = {
     'canvas':    'Canvas: reads your classes, assignments, announcements and grades (UCF Webcourses)',
     'calendar':  'Calendar: your Webcourses calendar feed, for due dates Canvas pages miss',
     'email':     'Email: makes course emails searchable in Library (read-only)',
-    'iphone':    'iPhone notes: rapid-fire notes from the Genesis iPhone app',
     'professor_sites': 'Professor websites: public course pages some professors keep outside Canvas',
 }
 

@@ -58,7 +58,7 @@ struct PluginPicker: View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Make Genesis yours.").font(Typeface.serif(30))
-                Text("Genesis and its companion are always with you. Add only the connections you need: anything you skip never runs, and you can change this any time in Settings › Plugins.")
+                Text("Pick where Genesis gathers what it needs to build your brief: assignments, documents, dates and announcements. Anything you skip never runs, and you can change this any time in Settings › Plugins.")
                     .font(Typeface.sans(13)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
             }
             ScrollView { PluginList().padding(.vertical, 2) }.frame(maxHeight: 430)

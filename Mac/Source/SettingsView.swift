@@ -29,7 +29,7 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             ScrollView { VStack(alignment: .leading, spacing: 14) {
-                Text("Add only what you need. Anything you don't add never runs, collects or appears.").font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
+                Text("Where Genesis gathers what it needs for your brief: assignments, documents, dates and announcements. Add only what you use; anything you don't add never runs or collects anything.").font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
                 PluginList()
             }.padding(20) }
                 .tabItem { Label("Plugins", systemImage: "puzzlepiece.extension") }
@@ -100,13 +100,11 @@ struct SettingsView: View {
                 if !mailMessage.isEmpty { Text(mailMessage).font(Typeface.sans(12)) }
             }
             }
-            if model.plugins.contains("iphone") {
             Section("iPhone") {
                 Text("The Genesis iPhone app drops notes into iCloud Drive › Genesis. They show up under Tell Genesis within a minute and count at your next sync.")
                     .font(Typeface.sans(12)).foregroundStyle(Theme.secondary)
                 Text(phoneStatus).font(Typeface.sans(12))
                 Button("Choose iCloud Drive folder…") { choosePhoneFolder() }
-            }
             }
             Section("What Genesis knows about you") {
                 CompanionMemoryList()
